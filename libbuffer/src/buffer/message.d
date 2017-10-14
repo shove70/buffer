@@ -90,7 +90,7 @@ protected:
 		tlv.write!ushort(_msgVersion,	0);
 		tlv.write!ushort(_method,		2);
 
-		foreach(i, type; Fields!T) {
+		foreach(i, type; FieldTypeTuple!T) {
 			static if (is(type == string)) {
 				mixin("
 					temp1 = new ubyte[4];
@@ -178,7 +178,7 @@ private:
         message._rsaKey		= rsaKey;
 
 		int temp, pos;
-		foreach(i, type; Fields!(T)) {
+		foreach(i, type; FieldTypeTuple!(T)) {
 			static if (is(type == string)) {
 				mixin("
 					temp = buffer.peek!int(pos);
