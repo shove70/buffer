@@ -1,0 +1,37 @@
+message Register {
+	string	name;
+	string	password;
+	int8	age;
+	string	phone;
+	string	email;
+}
+
+message Login {
+	string	name;
+	string	password;
+	int32	hallNo;
+}
+
+/*
+int8,		byte
+uint8,		ubyte
+int16,		short
+uint16,		ushort
+int32,		int
+uint32,		uint
+int64,		long
+uint64,		ulong
+float32,	float
+float64,	double
+string,		string
+
+Magic, length, RSA（serialize), CRC
+2Bytes,int32,  TLV        	 , 2Bytes
+
+TLV:
+msgVersion, method, params...
+2Bytes,     2Bytes,
+
+params:
+int8,int16,...len(int)+string...
+*/

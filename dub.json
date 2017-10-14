@@ -1,0 +1,19 @@
+{
+	"authors": ["Shove"],
+	"name" : "buffer",
+	"description" : "A protocol buffer library",
+	"version": "0.0.1",
+	"license": "MIT License",
+	"copyright": "Copyright © 2017, Shove",
+	"targetType": "library",
+	"targetName": "buffer",
+	"importPaths": [
+		"libbuffer/src"
+	],
+    "sourcePaths": [
+		"libbuffer/src"
+	],
+	"dependencies" : {
+		"cryption": "~>0.0.12"
+	}
+}
