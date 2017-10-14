@@ -8,7 +8,7 @@ import std.typecons;
 template Compile(string fileName)
 {
 	pragma(msg, "Compiling ", fileName, "...");
-	pragma(msg, compiler!fileName);
+	//pragma(msg, compiler!fileName);
 	const char[] Compile = compiler!fileName;
 }
 
@@ -82,8 +82,8 @@ private struct Token
 private Token[] lexer(string source)
 {
 	/* State transition diagram:
-	0:	none  1: word  2: {  3: ;  4: }
-		-1: / -2: //  -3: /*
+	0:	none		1: word			2: {		3: ;		4: }
+		-1: /		-2: //			-3: /*
 	
 	0	-> \s[ \f\n\r\t\v]		0
 		-> A..Za..z_			1
@@ -107,7 +107,7 @@ private Token[] lexer(string source)
 		-> other				Exception
 	-2	-> \n					restore state, hang = 0
 		-> other				skip
-	-3	-> /					if last is * restore state, hang = 0 else skip
+	-3	-> /					if last is * then restore state & hang = 0, else skip
 		-> other				skip
 	*/
 	
@@ -125,7 +125,7 @@ private Token[] lexer(string source)
 			case 0:
 				if (isWhitespace(ch))
 					continue;
-				else if (isIdentifierStartChar(ch)) {
+				else if (isIdentifierFirstChar(ch)) {
 					token = ch.to!string;
 					state = 1;
 				} else if (ch == '{') {
@@ -213,7 +213,7 @@ private bool isWhitespace(char ch)
 	return ch == ' ' || ch == '　' || ch == '\f' || ch == '\n' || ch == '\r' || ch == '\t' || ch == '\v';
 }
 
-private bool isIdentifierStartChar(char ch)
+private bool isIdentifierFirstChar(char ch)
 {
 	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_';
 }
