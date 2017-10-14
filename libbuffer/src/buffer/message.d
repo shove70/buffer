@@ -82,10 +82,8 @@ protected:
 	string				_key;
 	Nullable!RSAKeyInfo	_rsaKey;
 	
-	ubyte[] serialize(T)(Message message)
+	ubyte[] serialize(T)(T message)
 	{
-		T m = cast(T)message;
-
 		ubyte[] temp1, temp2;
 
 		ubyte[] tlv = new ubyte[4];
@@ -96,7 +94,7 @@ protected:
 			static if (is(type == string)) {
 				mixin("
 					temp1 = new ubyte[4];
-					temp2 = cast(ubyte[])m." ~ FieldNameTuple!T[i] ~ ";
+					temp2 = cast(ubyte[])message." ~ FieldNameTuple!T[i] ~ ";
 					temp1.write!int(cast(int)temp2.length, 0);
 					tlv ~= temp1;
 					tlv ~= temp2;
@@ -104,7 +102,7 @@ protected:
 			} else {
 				mixin("
 					temp1 = new ubyte[" ~ type.sizeof.to!string ~ "];
-					temp1.write!" ~ type.stringof ~ "(m." ~ FieldNameTuple!T[i] ~ ", 0);
+					temp1.write!" ~ type.stringof ~ "(message." ~ FieldNameTuple!T[i] ~ ", 0);
 					tlv ~= temp1;
 				");
 			}
@@ -130,16 +128,8 @@ protected:
 		
 		return buffer;
 	}
-	
-private:
 
-//	template GetFieldName(T, size_t i)
-//	{
-//	    static assert((is(Unqual!T == class) || is(Unqual!T == struct)), "Type must be class or struct: type = " ~ T.stringof);
-//	    static assert(i < T.tupleof.length, text(T.stringof, " has ", T.tupleof.length, " attributes: given index = ", i));
-//	
-//	    enum GetFieldName = FieldNameTuple!T[i];//__traits(identifier, T.tupleof[i]);
-//	}
+private:
 
 	static T deserialize(T)(ubyte[] buffer, ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey = Nullable!RSAKeyInfo())
 	{
