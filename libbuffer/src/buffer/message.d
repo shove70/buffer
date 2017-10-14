@@ -197,17 +197,3 @@ private:
 		return message;
 	}
 }
-
-import buffer.message;
-
-final class Sample : buffer.message.Message
-{
-	int32 age;
-	string name;
-	int16 age2;
-
-	ubyte[] serialize()
-	{
-		return super.serialize!(typeof(this))(this);
-	}
-}

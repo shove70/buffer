@@ -1,0 +1,19 @@
+{
+	"authors": [
+		"Shove"
+	],
+	"name": "example1",
+	"targetType": "executable",
+	"license": "MIT License",
+	"copyright": "Copyright © 2017, Shove",
+	"targetName": "example1",
+	"description": "a example for buffer.",
+	"dependencies" : {
+		"buffer": {
+			"path": "../../"
+		}
+	},
+	"stringImportPaths": [
+		"./"
+	]
+}

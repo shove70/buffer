@@ -5,16 +5,21 @@ import std.conv;
 import std.array;
 import std.typecons;
 
-template Compile(string fileName)
+template LoadBufferFile(string fileName)
 {
-	pragma(msg, "Compiling ", fileName, "...");
-	//pragma(msg, compiler!fileName);
-	const char[] Compile = compiler!fileName;
+	pragma(msg, "Compiling file: ", fileName, "...");
+	const char[] LoadBufferFile = compiler!(import(fileName));
 }
 
-private string compiler(string fileName)()
+template LoadBufferScript(string src)
 {
-	Token[] tokens = lexer(import(fileName));
+	pragma(msg, "Compiling script: ", extractScriptfragment(src), "...");
+	const char[] LoadBufferScript = compiler!src;
+}
+
+private string compiler(string source)()
+{
+	Token[] tokens = lexer(source);
 	Sentence[] sentences = parser(tokens);
 	
 	Appender!string code;
@@ -231,6 +236,22 @@ private bool inArray(string str, const string[] aArray)
 	}
 	
 	return false;
+}
+
+private string extractScriptfragment(string source)
+{
+	string ret = string.init;
+	
+	foreach(ch; source) {
+		if (ret.length >= 50)
+			break;
+		if (!isWhitespace(ch))
+			ret ~= ch.to!string;
+		else if ((ret.length > 0) && (ret[$ - 1] != ' '))
+			ret ~= " ";
+	}
+	
+	return ret;
 }
 
 /// parser
