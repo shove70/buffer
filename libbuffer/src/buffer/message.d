@@ -35,26 +35,18 @@ public:
 	alias double		float64;
 	//string
 
-	void settings(ushort magic, ushort msgVersion, ushort method, CryptType crypt = CryptType.NONE, string key = string.init)
+	static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
 	{
-		this._magic			= magic;
-		this._msgVersion	= msgVersion;
-		this._method		= method;
-		this._crypt			= crypt;
-		this._key			= key;
+		assert(Message._crypt == CryptType.NONE || (Message._crypt != CryptType.NONE && Message._key != string.init), "You must specify key when specifying the type of CryptType.");
 		
-		if (this._crypt == CryptType.RSA && this._key != string.init)
+		Message._magic	= magic;
+		Message._crypt	= crypt;
+		Message._key	= key;
+		
+		if (Message._crypt == CryptType.RSA && Message._key != string.init)
 		{
-			this._rsaKey = RSA.decodeKey(this._key);
+			Message._rsaKey = RSA.decodeKey(Message._key);
 		}
-	}
-	
-	void settings(ushort magic, ushort msgVersion, ushort method, RSAKeyInfo key)
-	{
-		settings(magic, msgVersion, method);
-
-		this._crypt			= CryptType.RSA;
-		this._rsaKey		= key;
 	}
 
 	static T deserialize(T)(ubyte[] buffer, ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
@@ -75,14 +67,12 @@ public:
 
 protected:
 
-	ushort				_magic;
-	ushort				_msgVersion;
-	ushort				_method;
-	CryptType			_crypt;
-	string				_key;
-	Nullable!RSAKeyInfo	_rsaKey;
+	__gshared static ushort					_magic;
+	__gshared static CryptType				_crypt;
+	__gshared static string					_key;
+	__gshared static Nullable!RSAKeyInfo	_rsaKey;
 	
-	ubyte[] serialize(T)(T message)
+	ubyte[] serialize(T)(T message, int a)
 	{
 		ubyte[] temp1, temp2;
 
@@ -195,5 +185,24 @@ private:
 		}
 
 		return message;
+	}
+}
+
+import buffer.message;
+
+final class Sample : buffer.message.Message
+{
+	int32 age;
+	string name;
+	int16 age2;
+
+	ubyte[] serialize()
+	{
+		return serialize(ushort.init, ushort.init);
+	}
+
+	ubyte[] serialize(ushort msgVersion, ushort method)
+	{
+		return super.serialize!(typeof(this))(this, msgVersion, method);
 	}
 }
