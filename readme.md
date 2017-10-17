@@ -20,8 +20,6 @@ mixin (LoadBufferScript!`
 // Simple:
 void main()
 {
-	//Message.settings(1229, CryptType.XTEA, "1234");
-
 	Sample sample = new Sample();
 	sample.name = "Tom";
 	sample.age = 20;
