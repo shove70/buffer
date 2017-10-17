@@ -1,3 +1,8 @@
+# A simple and practical protocol buffer library.
+
+### Quick Start:
+
+```
 import std.stdio;
 
 import buffer.message;
@@ -32,7 +37,7 @@ void main()
 }
 
 // Advanced:
-void main_()
+void main()
 {
 	// Set magic number, encryption method and key.
 	Message.settings(1229, CryptType.XTEA, "1234");
@@ -61,3 +66,5 @@ void main_()
 			break;
 	}
 }
+
+```

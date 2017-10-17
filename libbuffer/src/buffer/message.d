@@ -59,6 +59,18 @@ public:
 		}
 	}
 
+	static TypeInfo_Class getMessageTypeInfo(ubyte[] buffer)
+	{
+		if (buffer.length < 10)
+			return null;
+		
+		ushort t_messageId = buffer.peek!ushort(6);
+		if (t_messageId in _messages)
+			return _messages[t_messageId];
+			
+		return null;
+	}
+
 	static T deserialize(T)(ubyte[] buffer)
 	{
 		if (buffer.length < 10)
