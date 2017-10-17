@@ -36,6 +36,20 @@ private string compiler(string source)()
 		}
 		
 		code.put("\r\n");
+		code.put("\tthis()\r\n");
+		code.put("\t{\r\n");
+		code.put("\t\t_messageId = " ~ sentence.id ~ ";\r\n");
+		code.put("\t}\r\n\r\n");
+		
+		code.put("\tstatic this()\r\n");
+		code.put("\t{\r\n");
+		code.put("\t\tif (" ~ sentence.id ~ " in _messages)\r\n");
+		code.put("\t\t{\r\n");
+		code.put("\t\t\tthrow new Exception(\"message id conflict: " ~ sentence.id ~ ".\");\r\n");
+		code.put("\t\t}\r\n");
+		code.put("\t\t_messages[" ~ sentence.id ~ "] = " ~ sentence.name ~ ".classinfo;\r\n");
+		code.put("\t}\r\n\r\n");
+		
 		code.put("\tubyte[] serialize()\r\n");
 		code.put("\t{\r\n");
 		code.put("\t\treturn super.serialize!(typeof(this))(this);\r\n");
@@ -52,9 +66,12 @@ private enum TokenType
 	Define			= 1,	// message
 	Keyword			= 2,	// type: int8...
 	Identifier		= 3,
-	SentenceEnd		= 100,	// ;
-	DelimiterOpen	= 110,	// {
-	DelimiterClose	= 111	// }
+	Id				= 4,	// digit，positive integer
+	IdOpen			= 100,	// (
+	IdClose			= 101,	// )
+	SentenceEnd		= 110,	// ;
+	DelimiterOpen	= 120,	// {
+	DelimiterClose	= 121	// }
 }
 
 private const string[] keywords	= ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "string"];
@@ -87,7 +104,7 @@ private struct Token
 private Token[] lexer(string source)
 {
 	/* State transition diagram:
-	0:	none		1: word			2: {		3: ;		4: }
+	0:	none		1: word			2: {		3: ;		4: }		5: (		6: id		7: )
 		-1: /		-2: //			-3: /*
 	
 	0	-> \s[ \f\n\r\t\v]		0
@@ -95,6 +112,7 @@ private Token[] lexer(string source)
 		-> {					2 -> add token -> 0
 		-> ;					3 -> add token -> 0
 		-> }					4 -> add token -> 0
+		-> (					5
 		-> /					hang state, -1
 		-> other				Exception
 	1	-> \s[ \f\n\r\t\v]		1 -> add token -> 0
@@ -102,11 +120,18 @@ private Token[] lexer(string source)
 		-> {					1 -> add token -> 2 -> add token -> 0
 		-> ;					1 -> add token -> 3 -> add token -> 0
 		-> }					1 -> add token -> 4 -> add token -> 0
+		-> (					1 -> add token -> 5 -> add token -> 5
 		-> /					hang state, -1
 		-> other				Exception
 	2	->						0
 	3	->						0
 	4	->						0
+	5	-> 0..9					6
+		-> other				Exception
+	6	-> 0..9					6
+		-> )					7 -> add token -> 0
+		-> other				Exception
+	7	->						0
 	-1	-> /					-2
 		-> *					-3
 		-> other				Exception
@@ -142,6 +167,8 @@ private Token[] lexer(string source)
 				} else if (ch == '}') {
 					tokens ~= Token(TokenType.DelimiterClose, "}");
 					state = 0;
+				} else if (ch == '(') {
+					state = 5;
 				} else if (ch == '/') {
 					stateHang = state;
 					state = -1;
@@ -171,9 +198,35 @@ private Token[] lexer(string source)
 					tokens ~= Token(TokenType.DelimiterClose, "}");
 					token = string.init;
 					state = 0;
+				} else if (ch == '(') {
+					tokens ~= Token(token);
+					tokens ~= Token(TokenType.IdOpen, "(");
+					token = string.init;
+					state = 5;
 				} else if (ch == '/') {
 					stateHang = state;
 					state = -1;
+				} else {
+					throw new Exception("Invalid character." ~ ch.to!string);
+				}
+				break;
+			case 5:
+				if (isDigit(ch)) {
+					token ~= ch.to!string;
+					state = 6;
+				} else {
+					throw new Exception("Invalid character." ~ ch.to!string);
+				}
+				break;
+			case 6:
+				if (isDigit(ch)) {
+					token ~= ch.to!string;
+					continue;
+				} else if (ch == ')') {
+					tokens ~= Token(TokenType.Id, token);
+					tokens ~= Token(TokenType.IdClose, ")");
+					token = string.init;
+					state = 0;
 				} else {
 					throw new Exception("Invalid character." ~ ch.to!string);
 				}
@@ -228,6 +281,11 @@ private bool isIdentifierChar(char ch)
 	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || (ch >= '0' && ch <= '9');
 }
 
+private bool isDigit(char ch)
+{
+	return (ch >= '0' && ch <= '9');
+}
+
 private bool inArray(string str, const string[] aArray)
 {
 	foreach(s; aArray)
@@ -264,6 +322,7 @@ private struct Field
 
 private struct Sentence
 {
+	string id;
 	string name;
 	Field[] fields;
 }
@@ -287,14 +346,20 @@ private Sentence[] parser(Token[] tokens)
 
 private Sentence parser_define(Token[] tokens, ref int pos)
 {
-	if ((tokens.length - pos < 4) || (tokens[pos].type != TokenType.Define) || (tokens[pos + 1].type != TokenType.Identifier) || (tokens[pos + 2].type != TokenType.DelimiterOpen))
+	if ((tokens.length - pos < 7)	|| (tokens[pos].type != TokenType.Define)
+									|| (tokens[pos + 1].type != TokenType.IdOpen)
+									|| (tokens[pos + 2].type != TokenType.Id)
+									|| (tokens[pos + 3].type != TokenType.IdClose)
+									|| (tokens[pos + 4].type != TokenType.Identifier)
+									|| (tokens[pos + 5].type != TokenType.DelimiterOpen))
 	{
 		throw new Exception("Syntax error at " ~ tokens[pos].name);
 	}
 	
 	Sentence sentence;
-	sentence.name = tokens[pos + 1].name;
-	pos += 3;
+	sentence.id		= tokens[pos + 2].name;
+	sentence.name	= tokens[pos + 4].name;
+	pos += 6;
 	
 	while (pos < tokens.length)
 	{
@@ -339,8 +404,23 @@ final class Sample : buffer.message.Message
 	string name;
 	int16 age2;
 
+	this()
+	{
+		_messageId = 1;
+	}
+	
+	static this()
+	{
+		if (1 in _messages)
+		{
+			throw new Exception("message id conflict: " ~ "1" ~ ".");
+		}
+		_messages[1] = Sample.classinfo;
+	}
+
 	ubyte[] serialize()
 	{
 		return super.serialize!(typeof(this))(this);
 	}
-}*/
+}
+*/

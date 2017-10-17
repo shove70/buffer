@@ -5,7 +5,7 @@ import buffer.message;
 mixin (LoadBufferFile!"message.buffer");
 
 mixin (LoadBufferScript!`
-	message Sample {
+	message(3) Sample {
 		string	name;
 		int32	age;
 		int16	sex;
@@ -14,15 +14,18 @@ mixin (LoadBufferScript!`
 
 void main()
 {
-	Register register = new Register();
-	register.settings(1229, 1, 0xFF, CryptType.XTEA, "1234");
-	register.name = "Tom";
-	register.password = "123456";
-	register.age = 20;
-	ubyte[] buf = register.serialize();
+	Message.settings(1229, CryptType.XTEA, "1234");
+
+	Sample sample = new Sample();
+	sample.name = "Tom";
+	sample.age = 20;
+	sample.sex = 1;
+	ubyte[] buf = sample.serialize();
+	writeln(buf);
 	
-	register = Message.deserialize!Register(buf, 1229, CryptType.XTEA, "1234");
-	writeln(register.name);
-	writeln(register.password);
-	writeln(register.age);
+	Sample sam = Message.deserialize!Sample(buf);
+	writeln("msgid:\t", sam.messageId);
+	writeln("name:\t", sam.name);
+	writeln("age:\t", sam.age);
+	writeln("sex:\t", sam.sex);
 }
