@@ -102,7 +102,7 @@ public:
 			case CryptType.NONE:
 				break;
 			case CryptType.XTEA:
-				buffer = xteaDecrypt(buffer, Message._key);
+				buffer = Xtea.decrypt(buffer, Message._key);
 				break;
 			case CryptType.RSA:
 				buffer = RSA.decrypt(Message._rsaKey, buffer);
@@ -159,7 +159,7 @@ protected:
 			case CryptType.NONE:
 				break;
 			case CryptType.XTEA:
-				tlv = xteaEncrypt(tlv, Message._key);
+				tlv = Xtea.encrypt(tlv, Message._key);
 				break;
 			case CryptType.RSA:
 				tlv = RSA.encrypt(Message._rsaKey, tlv);
