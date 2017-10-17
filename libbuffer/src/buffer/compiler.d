@@ -4,6 +4,8 @@ import std.string;
 import std.conv;
 import std.array;
 import std.typecons;
+import std.algorithm.searching;
+import std.uni;
 
 template LoadBufferFile(string fileName)
 {
@@ -89,7 +91,7 @@ private struct Token
         {
             this.type = TokenType.Define;
         }
-        else if (inArray(name, keywords))
+        else if (keywords.any!(x => x == name))
         {
             this.type = TokenType.Keyword;
         }
@@ -160,7 +162,7 @@ private Token[] lexer(string source)
         switch (state)
         {
         case 0:
-            if (isWhitespace(ch))
+            if (isWhite(ch))
                 continue;
             else if (isIdentifierFirstChar(ch))
             {
@@ -197,7 +199,7 @@ private Token[] lexer(string source)
             }
             break;
         case 1:
-            if (isWhitespace(ch))
+            if (isWhite(ch))
             {
                 tokens ~= Token(token);
                 token = string.init;
@@ -246,7 +248,7 @@ private Token[] lexer(string source)
             }
             break;
         case 5:
-            if (isDigit(ch))
+            if (isNumber(ch))
             {
                 token ~= ch.to!string;
                 state = 6;
@@ -257,7 +259,7 @@ private Token[] lexer(string source)
             }
             break;
         case 6:
-            if (isDigit(ch))
+            if (isNumber(ch))
             {
                 token ~= ch.to!string;
                 continue;
@@ -320,35 +322,14 @@ private Token[] lexer(string source)
     return tokens;
 }
 
-private bool isWhitespace(char ch)
-{
-    return ch == ' ' || ch == '　' || ch == '\f' || ch == '\n' || ch == '\r' || ch == '\t' || ch == '\v';
-}
-
 private bool isIdentifierFirstChar(char ch)
 {
-    return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_';
+    return isAlpha(ch) || ch == '_';
 }
 
 private bool isIdentifierChar(char ch)
 {
-    return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || (ch >= '0' && ch <= '9');
-}
-
-private bool isDigit(char ch)
-{
-    return (ch >= '0' && ch <= '9');
-}
-
-private bool inArray(string str, const string[] aArray)
-{
-    foreach (s; aArray)
-    {
-        if (s == str)
-            return true;
-    }
-
-    return false;
+    return isAlphaNum(ch) || ch == '_';
 }
 
 private string extractScriptfragment(string source)
@@ -359,7 +340,7 @@ private string extractScriptfragment(string source)
     {
         if (ret.length >= 50)
             break;
-        if (!isWhitespace(ch))
+        if (!isWhite(ch))
             ret ~= ch.to!string;
         else if ((ret.length > 0) && (ret[$ - 1] != ' '))
             ret ~= " ";
