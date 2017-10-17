@@ -6,8 +6,9 @@ import std.conv;
 import std.bitmanip;
 import std.typecons;
 
-import cryption.rsa;
 import cryption.tea.xtea;
+import cryption.aes;
+import cryption.rsa;
 
 public import buffer.compiler;
 import buffer.utils;
@@ -16,7 +17,8 @@ enum CryptType
 {
     NONE = 0,
     XTEA = 1,
-    RSA = 2
+    AES  = 2,
+    RSA  = 3
 }
 
 abstract class Message
@@ -106,6 +108,9 @@ public:
         case CryptType.XTEA:
             buffer = Xtea.decrypt(buffer, Message._key);
             break;
+        case CryptType.AES:
+            buffer = AESUtils.decrypt!AES128(buffer, Message._key);
+            break;
         case CryptType.RSA:
             buffer = RSA.decrypt(Message._rsaKey, buffer);
             break;
@@ -173,6 +178,9 @@ protected:
             break;
         case CryptType.XTEA:
             tlv = Xtea.encrypt(tlv, Message._key);
+            break;
+        case CryptType.AES:
+            tlv = AESUtils.encrypt!AES128(tlv, Message._key);
             break;
         case CryptType.RSA:
             tlv = RSA.encrypt(Message._rsaKey, tlv);
