@@ -2,7 +2,7 @@
 	"authors": ["Shove"],
 	"name" : "buffer",
 	"description" : "A protocol buffer library",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"license": "MIT License",
 	"copyright": "Copyright © 2017, Shove",
 	"targetType": "library",
