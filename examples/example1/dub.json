@@ -2,7 +2,7 @@
 	"authors": [
 		"Shove"
 	],
-	"name": "example1",
+	"name": "buffer",
 	"targetType": "executable",
 	"license": "MIT License",
 	"copyright": "Copyright © 2017, Shove",
