@@ -1,0 +1,11 @@
+{
+	"dub": {
+		"lastUpgrade": "2017-10-18T11:14:11.835632",
+		"cachedUpgrades": {
+			"buffer": {
+				"path": "/Users/shove/.dub/packages/buffer/buffer/"
+			},
+			"cryption": "0.0.14"
+		}
+	}
+}
