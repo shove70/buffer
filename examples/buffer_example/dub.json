@@ -2,11 +2,11 @@
 	"authors": [
 		"Shove"
 	],
-	"name": "buffer",
+	"name": "buffer_example",
 	"targetType": "executable",
 	"license": "MIT License",
 	"copyright": "Copyright © 2017, Shove",
-	"targetName": "example1",
+	"targetName": "buffer_example",
 	"description": "a example for buffer.",
 	"dependencies" : {
 		"buffer": {
