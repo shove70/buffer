@@ -1,7 +1,0 @@
-{
-	"fileVersion": 1,
-	"versions": {
-		"buffer": {"path":"../../"},
-		"cryption": "0.0.14"
-	}
-}
