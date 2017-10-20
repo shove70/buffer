@@ -6,7 +6,6 @@ import std.conv : to;
 import std.variant;
 
 import buffer.message;
-import buffer.compiler;
 
 class Server(Business)
 {
