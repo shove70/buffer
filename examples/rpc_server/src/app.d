@@ -1,38 +1,75 @@
 import std.stdio;
+import std.socket;
+import std.concurrency;
+import core.thread;
 
 import buffer.message;
 import buffer.rpc.server;
+
+
+class Business
+{
+    mixin(LoadBufferScript!`
+        message(1) LoginInfo {
+            string name;
+            string password;
+        }
+
+        message(2) LoginRetInfo {
+            int32  id;
+            string name;
+        }
+    `);
+
+    LoginRetInfo Login(string name, string password)
+    {
+        // Access the database, check the user name and password, assuming the validation passed, the user's ID is 1
+        int userId = 1;
+        // ...
+        // Check OK.
+
+        LoginRetInfo ret = new LoginRetInfo();
+        ret.id = userId;
+        ret.name = name;
+
+        return ret;
+    }
+}
+
 
 __gshared Server!(Business) server;
 
 void main()
 {
-	Message.settings(1229, CryptType.XTEA, "1234");
-	server = new Server!(Business)();
-ubyte[] aa = [4, 205, 0, 0, 0, 43, 0, 1, 0, 5, 76, 111, 103, 105, 110, 119, 228, 36, 74, 40, 127, 219, 75, 64, 81, 34, 43, 186, 152, 225, 153, 4, 38, 91, 94, 190, 77, 247, 14, 205, 171, 99, 157, 175, 10, 244, 79, 103, 136];
-	writeln(server.Handler(aa));
+    Message.settings(1229, CryptType.XTEA, "1234");
+    server = new Server!(Business)();
+
+    TcpSocket socket = new TcpSocket();
+    socket.blocking = true;
+    socket.bind(new InternetAddress("127.0.0.1", 10000));
+    socket.listen(10);
+
+    while (true)
+    {
+        Socket accept = socket.accept();
+        spawn(&acceptHandler, cast(shared Socket) accept);
+    }
 }
 
-class Business
+void acceptHandler(shared Socket accept)
 {
-	mixin (LoadBufferScript!`
-		message(1) LoginInfo {
-			string	name;
-			string	password;
-		}
-		
-		message(2) LoginRetInfo {
-			int32	id;
-			string	name;
-		}
-	`);
-	
-	//alias _buffer_MESSAGE_ALIAS_1 = LoginInfo;
-	
-	LoginRetInfo Login(string name, string password)
-	{
-		LoginRetInfo lr = new LoginRetInfo();
+    Socket socket = cast(Socket) accept;
 
-		return lr;
-	}
+    while (true)
+    {
+        ubyte[] data = new ubyte[1024];
+        long len = socket.receive(data);
+
+        if (len > 0)
+        {
+            ubyte[] ret_data = server.Handler(data[0..len]);
+            if (ret_data != null)
+                socket.send(ret_data.dup);
+        }
+    }
 }
