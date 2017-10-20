@@ -246,7 +246,7 @@ public:
         foreach (i, type; FieldTypeTuple!(T))
         {
             mixin("
-				message." ~ FieldNameTuple!T[i] ~ " = params[" ~ i.to!string ~ "].get!" ~ type.stringof ~ ";
+                message." ~ FieldNameTuple!T[i] ~ " = params[" ~ i.to!string ~ "].get!" ~ type.stringof ~ ";
 			");
         }
 
@@ -306,24 +306,24 @@ public:
             static if (is(Unqual!type == string))
             {
                 mixin("
-	                typeId = buffer[pos];
-	                assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
-	                pos++;
-					temp = buffer.peek!int(pos);
-					pos += 4;
-					message." ~ FieldNameTuple!T[i] ~ " = cast(string)buffer[pos..pos + temp];
-					pos += temp;
-				");
+                    typeId = buffer[pos];
+                    assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
+                    pos++;
+                    temp = buffer.peek!int(pos);
+                    pos += 4;
+                    message." ~ FieldNameTuple!T[i] ~ " = cast(string)buffer[pos..pos + temp];
+                    pos += temp;
+                ");
             }
             else
             {
                 mixin("
-	                typeId = buffer[pos];
-	                assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
-	                pos++;
-					message." ~ FieldNameTuple!T[i] ~ " = buffer.peek!" ~ type.stringof ~ "(pos);
-					pos += " ~ type.sizeof.to!string ~ ";
-				");
+                    typeId = buffer[pos];
+                    assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
+                    pos++;
+                    message." ~ FieldNameTuple!T[i] ~ " = buffer.peek!" ~ type.stringof ~ "(pos);
+                    pos += " ~ type.sizeof.to!string ~ ";
+                ");
             }
         }
 
@@ -345,22 +345,22 @@ protected:
             static if (is(Unqual!type == string))
             {
                 mixin("
-					temp1 = new ubyte[4];
-					temp2 = cast(ubyte[])message." ~ FieldNameTuple!T[i] ~ ";
-					temp1.write!int(cast(int)temp2.length, 0);
-					tlv ~= cast(ubyte)" ~ TypeID!type.to!string ~ ";
-					tlv ~= temp1;
-					tlv ~= temp2;
-				");
+                    temp1 = new ubyte[4];
+                    temp2 = cast(ubyte[])message." ~ FieldNameTuple!T[i] ~ ";
+                    temp1.write!int(cast(int)temp2.length, 0);
+                    tlv ~= cast(ubyte)" ~ TypeID!type.to!string ~ ";
+                    tlv ~= temp1;
+                    tlv ~= temp2;
+                ");
             }
             else
             {
                 mixin("
-					temp1 = new ubyte[" ~ type.sizeof.to!string ~ "];
-					temp1.write!" ~ type.stringof ~ "(message." ~ FieldNameTuple!T[i] ~ ", 0);
-					tlv ~= cast(ubyte)" ~ TypeID!type.to!string ~ ";
-					tlv ~= temp1;
-				");
+                    temp1 = new ubyte[" ~ type.sizeof.to!string ~ "];
+                    temp1.write!" ~ type.stringof ~ "(message." ~ FieldNameTuple!T[i] ~ ", 0);
+                    tlv ~= cast(ubyte)" ~ TypeID!type.to!string ~ ";
+                    tlv ~= temp1;
+                ");
             }
         }
 

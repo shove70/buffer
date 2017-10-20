@@ -37,14 +37,14 @@ class Server(Business)
                 alias ReturnType!func RT;
 
                 mixin(`
-					if (method == "` ~ member ~ `")
-					{
-						assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-						
-						RT msg_ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
-						return msg_ret.serialize();
-					}
-				`);
+                    if (method == "` ~ member ~ `")
+                    {
+                        assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+
+                        RT msg_ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
+                        return msg_ret.serialize();
+                    }
+                `);
             }
         }
 

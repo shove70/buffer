@@ -66,19 +66,20 @@ private string compiler(string source)()
 
 private enum TokenType
 {
-    Define          = 1,   // message
-    Keyword         = 2,   // type: int8...
-    Identifier      = 3,
-    Id              = 4,   // digit，positive integer
-    IdOpen          = 100, // (
-    IdClose         = 101, // )
-    SentenceEnd     = 110, // ;
-    DelimiterOpen   = 120, // {
-    DelimiterClose  = 121  // }
+    Define            = 1,           // message
+    Keyword           = 2,           // type: int8...
+    Identifier        = 3,
+    Id                = 4,           // digit，positive integer
+    IdOpen            = 100,         // (
+    IdClose           = 101,         // )
+    SentenceEnd       = 110,         // ;
+    DelimiterOpen     = 120,         // {
+    DelimiterClose    = 121          // }
 }
 
 private const string[] keywords = [
-    "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "string"
+    "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64",
+    "float32", "float64", "string"
 ];
 
 private struct Token
@@ -116,7 +117,7 @@ private Token[] lexer(string source)
     /* State transition diagram:
 	0:	none		1: word			2: {		3: ;		4: }		5: (		6: id		7: )
 		-1: /		-2: //			-3: /*
-	
+
 	0	-> \s[ \f\n\r\t\v]      0
 		-> A..Za..z_            1
 		-> {                    2 -> add token -> 0
@@ -196,7 +197,7 @@ private Token[] lexer(string source)
             }
             else
             {
-            	assert(0, "Invalid character: " ~ ch.to!string);
+                assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 1:
@@ -245,7 +246,7 @@ private Token[] lexer(string source)
             }
             else
             {
-            	assert(0, "Invalid character: " ~ ch.to!string);
+                assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 5:
@@ -256,7 +257,7 @@ private Token[] lexer(string source)
             }
             else
             {
-            	assert(0, "Invalid character: " ~ ch.to!string);
+                assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 6:
@@ -274,7 +275,7 @@ private Token[] lexer(string source)
             }
             else
             {
-            	assert(0, "Invalid character: " ~ ch.to!string);
+                assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case -1:
@@ -373,7 +374,7 @@ private Sentence[] parser(Token[] tokens)
     {
         if (tokens[pos].type != TokenType.Define)
         {
-        	assert(0, "Syntax error at " ~ tokens[pos].name);
+            assert(0, "Syntax error at " ~ tokens[pos].name);
         }
 
         sentences ~= parser_define(tokens, pos);
@@ -389,7 +390,7 @@ private Sentence parser_define(Token[] tokens, ref int pos)
             || (tokens[pos + 3].type != TokenType.IdClose) || (tokens[pos + 4].type != TokenType.Identifier)
             || (tokens[pos + 5].type != TokenType.DelimiterOpen))
     {
-    	assert(0, "Syntax error at " ~ tokens[pos].name);
+        assert(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Sentence sentence;
@@ -422,7 +423,7 @@ private Nullable!Field parser_field(Token[] tokens, ref int pos)
             || (tokens[pos + 1].type != TokenType.Identifier)
             || (tokens[pos + 2].type != TokenType.SentenceEnd))
     {
-    	assert(0, "Syntax error at " ~ tokens[pos].name);
+        assert(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Field field;
@@ -438,27 +439,27 @@ import buffer.message;
 
 final static class Sample : buffer.message.Message
 {
-	string	name;
-	int32	age;
-	int16	sex;
+    string name;
+    int32 age;
+    int16 sex;
 
-	this()
-	{
-		_messageId = 3;
-	}
-	
-	static this()
-	{
-		if (3 in _messages)
-		{
-			assert(0, "message id conflict: " ~ "3");
-		}
-		_messages[3] = Sample.classinfo;
-	}
+    this()
+    {
+        _messageId = 3;
+    }
 
-	ubyte[] serialize(string method = string.init)
-	{
-		return super.serialize!(typeof(this))(this, method);
-	}
+    static this()
+    {
+        if (3 in _messages)
+        {
+            assert(0, "message id conflict: " ~ "3");
+        }
+        _messages[3] = Sample.classinfo;
+    }
+
+    ubyte[] serialize(string method = string.init)
+    {
+        return super.serialize!(typeof(this))(this, method);
+    }
 }
 */
