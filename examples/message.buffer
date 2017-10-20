@@ -1,33 +1,37 @@
-message(1) Register {
-	string	name;
-	string	password;
-	int8	age;
-	string	phone;
-	string	email;
+message(1) RegisterInfo {
+	string  name;
+	string  password;
+	int8    age;
+	string  phone;
+	string  email;
 }
 
-message(2) Login {
-	string	name;
-	string	password;
-	int32	hallNo;
+message(2) LoginInfo {
+	string  name;
+	string  password;
+	int32   hallNo;
 }
 
 /*
-int8,		dlang: byte
-uint8,		dlang: ubyte
-int16,		dlang: short
-uint16,		dlang: ushort
-int32,		dlang: int
-uint32,		dlang: uint
-int64,		dlang: long
-uint64,		dlang: ulong
-float32,	dlang: float
-float64,	dlang: double
-string,		dlang: string
+int8,       dlang: byte    0x01
+uint8,      dlang: ubyte   0x02
+int16,      dlang: short   0x03
+uint16,     dlang: ushort  0x04
+int32,      dlang: int     0x05
+uint32,     dlang: uint    0x06
+int64,      dlang: long    0x07
+uint64,     dlang: ulong   0x08
+float32,    dlang: float   0x20
+float64,    dlang: double  0x21
+string,     dlang: string  0x50
 
-Magic, length,    MessageId, TLV（serialize), CRC
-2Bytes,int32(4),  2Bytes,    ...size = N    , 2Bytes
+Magic, length,   MessageId, methodLength, method,           TLV（serialize), CRC
+2Bytes,int32(4), 2Bytes,    2Bytes,       string(size = N), size = N       , 2Bytes
 
 TLV:
-int8,int16,...len(int)+string...
+int8,      int16,     ..., string
+type+data, type+data, ..., type+len+data
+
+type: ubyte
+len:  int32(4)
 */

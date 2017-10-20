@@ -21,7 +21,7 @@ void main()
 	sample.sex = 1;
 	ubyte[] buf = sample.serialize();
 	writeln(buf);
-	
+		
 	Sample sam = Message.deserialize!Sample(buf);
 	writeln("msgid:\t", sam.messageId);
 	writeln("name:\t", sam.name);
@@ -42,7 +42,10 @@ void main_()
 	ubyte[] buf = sample.serialize();
 	writeln(buf);
 	
-	TypeInfo_Class typeinfo = Message.getMessageTypeInfo(buf);
+	ushort messageId;
+	TypeInfo_Class typeinfo;
+	string method;
+	Message.getMessageInfo(buf, messageId, typeinfo, method);
 	
 	switch (typeinfo.name)
 	{

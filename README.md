@@ -47,7 +47,9 @@ void main()
 	ubyte[] buf = sample.serialize();
 	writeln(buf);
 	
-	TypeInfo_Class typeinfo = Message.getMessageTypeInfo(buf);
+	TypeInfo_Class typeinfo;
+	string method;
+	Message.getMessageInfo(buf, typeinfo, method);
 	
 	switch (typeinfo.name)
 	{

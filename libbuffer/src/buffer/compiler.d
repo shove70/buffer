@@ -29,7 +29,7 @@ private string compiler(string source)()
 
     foreach (sentence; sentences)
     {
-        code.put("final class " ~ sentence.name ~ " : buffer.message.Message\r\n");
+        code.put("final static class " ~ sentence.name ~ " : buffer.message.Message\r\n");
         code.put("{\r\n");
 
         foreach (field; sentence.fields)
@@ -47,15 +47,16 @@ private string compiler(string source)()
         code.put("\t{\r\n");
         code.put("\t\tif (" ~ sentence.id ~ " in _messages)\r\n");
         code.put("\t\t{\r\n");
-        code.put("\t\t\tthrow new Exception(\"message id conflict: " ~ sentence.id ~ ".\");\r\n");
+        code.put("\t\t\tassert(0, \"message id conflict: " ~ sentence.id ~ "\");\r\n");
         code.put("\t\t}\r\n");
         code.put("\t\t_messages[" ~ sentence.id ~ "] = " ~ sentence.name ~ ".classinfo;\r\n");
         code.put("\t}\r\n\r\n");
 
-        code.put("\tubyte[] serialize()\r\n");
+        code.put("\tubyte[] serialize(string method = string.init)\r\n");
         code.put("\t{\r\n");
-        code.put("\t\treturn super.serialize!(typeof(this))(this);\r\n");
-        code.put("\t}\r\n}\r\n\r\n");
+        code.put("\t\treturn super.serialize!(typeof(this))(this, method);\r\n");
+        code.put("\t}\r\n");
+        code.put("}\r\n\r\n");
     }
 
     return code.data;
@@ -195,7 +196,7 @@ private Token[] lexer(string source)
             }
             else
             {
-                throw new Exception("Invalid character." ~ ch.to!string);
+            	assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 1:
@@ -244,7 +245,7 @@ private Token[] lexer(string source)
             }
             else
             {
-                throw new Exception("Invalid character." ~ ch.to!string);
+            	assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 5:
@@ -255,7 +256,7 @@ private Token[] lexer(string source)
             }
             else
             {
-                throw new Exception("Invalid character." ~ ch.to!string);
+            	assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 6:
@@ -273,7 +274,7 @@ private Token[] lexer(string source)
             }
             else
             {
-                throw new Exception("Invalid character." ~ ch.to!string);
+            	assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case -1:
@@ -287,7 +288,7 @@ private Token[] lexer(string source)
             }
             else
             {
-                throw new Exception("Invalid character." ~ ch.to!string);
+                assert(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case -2:
@@ -372,7 +373,7 @@ private Sentence[] parser(Token[] tokens)
     {
         if (tokens[pos].type != TokenType.Define)
         {
-            throw new Exception("Syntax error at " ~ tokens[pos].name);
+        	assert(0, "Syntax error at " ~ tokens[pos].name);
         }
 
         sentences ~= parser_define(tokens, pos);
@@ -388,7 +389,7 @@ private Sentence parser_define(Token[] tokens, ref int pos)
             || (tokens[pos + 3].type != TokenType.IdClose) || (tokens[pos + 4].type != TokenType.Identifier)
             || (tokens[pos + 5].type != TokenType.DelimiterOpen))
     {
-        throw new Exception("Syntax error at " ~ tokens[pos].name);
+    	assert(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Sentence sentence;
@@ -421,7 +422,7 @@ private Nullable!Field parser_field(Token[] tokens, ref int pos)
             || (tokens[pos + 1].type != TokenType.Identifier)
             || (tokens[pos + 2].type != TokenType.SentenceEnd))
     {
-        throw new Exception("Syntax error at " ~ tokens[pos].name);
+    	assert(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Field field;
@@ -435,7 +436,7 @@ private Nullable!Field parser_field(Token[] tokens, ref int pos)
 /*
 import buffer.message;
 
-final class Sample : buffer.message.Message
+final static class Sample : buffer.message.Message
 {
 	string	name;
 	int32	age;
@@ -450,14 +451,14 @@ final class Sample : buffer.message.Message
 	{
 		if (3 in _messages)
 		{
-			throw new Exception("message id conflict: " ~ "3" ~ ".");
+			assert(0, "message id conflict: " ~ "3");
 		}
 		_messages[3] = Sample.classinfo;
 	}
 
-	ubyte[] serialize()
+	ubyte[] serialize(string method = string.init)
 	{
-		return super.serialize!(typeof(this))(this);
+		return super.serialize!(typeof(this))(this, method);
 	}
 }
 */

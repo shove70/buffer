@@ -4,12 +4,12 @@ import buffer.message;
 import buffer.rpc.client;
 
 mixin (LoadBufferScript!`
-	message(1) Login {
+	message(1) LoginInfo {
 		string	name;
 		string	password;
 	}
 	
-	message(2) LoginRet {
+	message(2) LoginRetInfo {
 		int32	id;
 		string	name;
 	}
@@ -17,11 +17,11 @@ mixin (LoadBufferScript!`
 
 ubyte[] TcpRequestHandler(ubyte[] data)
 {
-	Login login = Message.deserialize!Login(data);
-	LoginRet lr = new LoginRet();
-	lr.id = 1000;
-	lr.name = login.name;
-	return lr.serialize();
+	LoginInfo log_info = Message.deserialize!LoginInfo(data);
+	LoginRetInfo ret = new LoginRetInfo();
+	ret.id = 1000;
+	ret.name = log_info.name;
+	return ret.serialize();
 }
 
 void main()
@@ -29,7 +29,10 @@ void main()
 	Message.settings(1229, CryptType.XTEA, "1234");
 	Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
 	
-	LoginRet lr = Client.call!(Login, LoginRet)("admin", "123456");
-	writeln(lr.id);
-	writeln(lr.name);
+	LoginRetInfo lr = Client.call!(LoginInfo, LoginRetInfo)("Login", "admin", "123456");
+	if (lr !is null)
+	{
+		writeln(lr.id);
+		writeln(lr.name);
+	}
 }
