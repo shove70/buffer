@@ -30,7 +30,7 @@ class Client
         {
             mixin("
                 t1." ~ FieldNameTuple!T1[i] ~ " = params[" ~ i.to!string ~ "];
-			");
+            ");
         }
 
         return Message.deserialize!T2(handler(t1.serialize(method)));
