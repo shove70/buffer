@@ -17,8 +17,8 @@ enum CryptType
 {
     NONE = 0,
     XTEA = 1,
-    AES  = 2,
-    RSA  = 3
+    AES =  2,
+    RSA =  3
 }
 
 template TypeID(Type)
@@ -82,7 +82,7 @@ public:
 
         Message._magic = magic;
         Message._crypt = crypt;
-        Message._key = key;
+        Message._key   = key;
 
         if (Message._crypt == CryptType.RSA)
         {
@@ -101,17 +101,17 @@ public:
         {
             messageClass = _messages[messageId];
         }
-        
+
         ushort t_method_len = buffer.peek!ushort(8);
         if (t_method_len > 0)
         {
-			method = cast(string)buffer[10 .. 10 + t_method_len];
+            method = cast(string) buffer[10 .. 10 + t_method_len];
         }
     }
 
-	static Variant[] deserialize(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageClass, out string method)
-	{
-		assert(buffer != null && buffer.length >= 12, "Incorrect buffer length.");
+    static Variant[] deserialize(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageClass, out string method)
+    {
+        assert(buffer != null && buffer.length >= 12, "Incorrect buffer length.");
 
         ushort t_magic, t_crc;
         int t_len;
@@ -126,7 +126,7 @@ public:
         if (strToByte_hex(MD5(buffer[0 .. $ - 2])[0 .. 4]) != buffer[$ - 2 .. $])
             return null;
 
-		getMessageInfo(buffer, messageId, messageClass, method);
+        getMessageInfo(buffer, messageId, messageClass, method);
 
         ushort t_method_len = buffer.peek!ushort(8);
         buffer = buffer[10 + t_method_len .. $ - 2];
@@ -146,65 +146,114 @@ public:
             break;
         }
 
-		ubyte typeId;
+        ubyte typeId;
         int pos;
-		Variant[] ret;
-		
-		while (pos < (buffer.length - 1))
-		{
-			typeId = buffer[pos];
-			pos++;
-			
-			if (typeId == TypeID!byte) {
-				ret ~= Variant(buffer.peek!byte(pos));
-				pos += byte.sizeof;
-			} else if (typeId == TypeID!ubyte) {
-				ret ~= Variant(buffer.peek!ubyte(pos));
-				pos += ubyte.sizeof;
-			} else if (typeId == TypeID!short) {
-				ret ~= Variant(buffer.peek!short(pos));
-				pos += short.sizeof;
-			} else if (typeId == TypeID!ushort) {
-				ret ~= Variant(buffer.peek!ushort(pos));
-				pos += ushort.sizeof;
-			} else if (typeId == TypeID!int) {
-				ret ~= Variant(buffer.peek!int(pos));
-				pos += int.sizeof;
-			} else if (typeId == TypeID!uint) {
-				ret ~= Variant(buffer.peek!uint(pos));
-				pos += uint.sizeof;
-			} else if (typeId == TypeID!long) {
-				ret ~= Variant(buffer.peek!long(pos));
-				pos += long.sizeof;
-			} else if (typeId == TypeID!ulong) {
-				ret ~= Variant(buffer.peek!ulong(pos));
-				pos += ulong.sizeof;
-			} else if (typeId == TypeID!float) {
-				ret ~= Variant(buffer.peek!float(pos));
-				pos += float.sizeof;
-			} else if (typeId == TypeID!double) {
-				ret ~= Variant(buffer.peek!double(pos));
-				pos += double.sizeof;
-			} else if (typeId == TypeID!string) {
-				int temp = buffer.peek!int(pos);
-				pos += 4;
-				ret ~= Variant(cast(string)buffer[pos..pos + temp]);
-				pos += temp;
-			} else {
-				assert(0, "Data types id that are not supported: " ~ typeId.to!string);
-			}
-		}
+        Variant[] ret;
+
+        while (pos < (buffer.length - 1))
+        {
+            typeId = buffer[pos];
+            pos++;
+
+            if (typeId == TypeID!byte)
+            {
+                ret ~= Variant(buffer.peek!byte(pos));
+                pos += byte.sizeof;
+            }
+            else if (typeId == TypeID!ubyte)
+            {
+                ret ~= Variant(buffer.peek!ubyte(pos));
+                pos += ubyte.sizeof;
+            }
+            else if (typeId == TypeID!short)
+            {
+                ret ~= Variant(buffer.peek!short(pos));
+                pos += short.sizeof;
+            }
+            else if (typeId == TypeID!ushort)
+            {
+                ret ~= Variant(buffer.peek!ushort(pos));
+                pos += ushort.sizeof;
+            }
+            else if (typeId == TypeID!int)
+            {
+                ret ~= Variant(buffer.peek!int(pos));
+                pos += int.sizeof;
+            }
+            else if (typeId == TypeID!uint)
+            {
+                ret ~= Variant(buffer.peek!uint(pos));
+                pos += uint.sizeof;
+            }
+            else if (typeId == TypeID!long)
+            {
+                ret ~= Variant(buffer.peek!long(pos));
+                pos += long.sizeof;
+            }
+            else if (typeId == TypeID!ulong)
+            {
+                ret ~= Variant(buffer.peek!ulong(pos));
+                pos += ulong.sizeof;
+            }
+            else if (typeId == TypeID!float)
+            {
+                ret ~= Variant(buffer.peek!float(pos));
+                pos += float.sizeof;
+            }
+            else if (typeId == TypeID!double)
+            {
+                ret ~= Variant(buffer.peek!double(pos));
+                pos += double.sizeof;
+            }
+            else if (typeId == TypeID!string)
+            {
+                int temp = buffer.peek!int(pos);
+                pos += 4;
+                ret ~= Variant(cast(string) buffer[pos .. pos + temp]);
+                pos += temp;
+            }
+            else
+            {
+                assert(0, "Data types id that are not supported: " ~ typeId.to!string);
+            }
+        }
 
         return ret;
-	}
+    }
 
-	static T deserialize(T)(ubyte[] buffer)
-	{
-		string method;
-		
-		return deserialize!T(buffer, method);
-	}
+    static T deserialize(T)(ubyte[] buffer)
+    {
+        string method;
 
+        return deserialize!T(buffer, method);
+    }
+
+    static T deserialize(T)(ubyte[] buffer, out string method)
+    {
+        ushort messageId;
+        TypeInfo_Class messageClass;
+        Variant[] params = deserialize(buffer, messageId, messageClass, method);
+
+        if (messageClass is null || params == null)
+            return null;
+
+        T message = new T();
+        if (message.messageId != messageId)
+        {
+            assert(0, "The type T(" ~ T.classinfo.name ~ ") of the incoming template is incorrect. It should be " ~ messageClass.name);
+        }
+
+        foreach (i, type; FieldTypeTuple!(T))
+        {
+            mixin("
+				message." ~ FieldNameTuple!T[i] ~ " = params[" ~ i.to!string ~ "].get!" ~ type.stringof ~ ";
+			");
+        }
+
+        return message;
+    }
+
+    /*
     static T deserialize(T)(ubyte[] buffer, ref string method)
     {
         assert(buffer != null && buffer.length >= 12, "Incorrect buffer length.");
@@ -231,7 +280,7 @@ public:
         }
 
         ushort t_method_len = buffer.peek!ushort(8);
-        method = cast(string)buffer[10 .. 10 + t_method_len];
+        method = cast(string) buffer[10 .. 10 + t_method_len];
         buffer = buffer[10 + t_method_len .. $ - 2];
 
         final switch (Message._crypt)
@@ -249,7 +298,7 @@ public:
             break;
         }
 
-		ubyte typeId;
+        ubyte typeId;
         int temp, pos;
 
         foreach (i, type; FieldTypeTuple!(T))
@@ -258,7 +307,7 @@ public:
             {
                 mixin("
 	                typeId = buffer[pos];
-	                assert("~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
+	                assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
 	                pos++;
 					temp = buffer.peek!int(pos);
 					pos += 4;
@@ -270,7 +319,7 @@ public:
             {
                 mixin("
 	                typeId = buffer[pos];
-	                assert("~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
+	                assert(" ~ TypeID!type.to!string ~ " == typeId, \"Data type mismatch.\");
 	                pos++;
 					message." ~ FieldNameTuple!T[i] ~ " = buffer.peek!" ~ type.stringof ~ "(pos);
 					pos += " ~ type.sizeof.to!string ~ ";
@@ -280,7 +329,7 @@ public:
 
         return message;
     }
-
+    */
 protected:
 
     ubyte[] serialize(T)(T message, string method = string.init)
@@ -336,7 +385,7 @@ protected:
         buffer.write!ushort(Message._magic, 0);
         buffer.write!int(cast(int)(2 + 2 + method_buf.length + tlv.length + 2), 2);
         buffer.write!ushort(messageId, 6);
-        buffer.write!ushort(cast(ushort)method_buf.length, 8);
+        buffer.write!ushort(cast(ushort) method_buf.length, 8);
         if (method_buf.length > 0)
             buffer ~= method_buf;
         buffer ~= tlv;
