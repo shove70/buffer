@@ -24,9 +24,9 @@ public:
     alias ulong   uint64;
     alias float   float32;
     alias double  float64;
+    //bool
     //char
     //string
-    //bool
 
     @property ushort messageId()
     {
