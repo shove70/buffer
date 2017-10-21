@@ -48,7 +48,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-                            T ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
+                            T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
                             return Message.serialize_without_msginfo(method, ret);
                         }
                     `);
@@ -59,7 +59,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-                            T ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
+                            T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
                             return ret.serialize();
                         }
                     `);
@@ -70,7 +70,7 @@ class Server(Business)
         assert(0, "The server does not implement client call method: " ~ method);
     }
 
-    static string CombinationParams(ParameterTypes...)()
+    static string combineParams(ParameterTypes...)()
     {
         string s;
 
