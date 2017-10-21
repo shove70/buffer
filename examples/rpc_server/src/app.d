@@ -34,6 +34,16 @@ class Business
 
         return ret;
     }
+
+    long GetUserId(string name)
+    {
+        // Access the database, query the user's id by name, assuming the user's ID is 1
+        int userId = 1;
+        // ...
+        // Query OK.
+
+        return userId;
+    }
 }
 
 

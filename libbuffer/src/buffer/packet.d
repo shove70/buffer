@@ -42,8 +42,12 @@ template TypeID(Type)
         const ubyte TypeID = 0x20;
     else static if (is(Unqual!Type == double))
         const ubyte TypeID = 0x21;
+    else static if (is(Unqual!Type == bool))
+        const ubyte TypeID = 0x30;
+    else static if (is(Unqual!Type == char))
+        const ubyte TypeID = 0x40;
     else static if (is(Unqual!Type == string))
-        const ubyte TypeID = 0x50;
+        const ubyte TypeID = 0x41;
     else
         static assert(0, "Data types that are not supported: " ~ typeid(Type));
 }
@@ -107,6 +111,14 @@ package class Packet
             else if (v.type == typeid(double))
             {
                 put!double(v);
+            }
+            else if (v.type == typeid(bool))
+            {
+                put!bool(v);
+            }
+            else if (v.type == typeid(char))
+            {
+                put!char(v);
             }
             else if (v.type == typeid(string))
             {
@@ -258,6 +270,14 @@ package class Packet
             else if (typeId == TypeID!double)
             {
                 get!double;
+            }
+            else if (typeId == TypeID!bool)
+            {
+                get!bool;
+            }
+            else if (typeId == TypeID!char)
+            {
+                get!char;
             }
             else if (typeId == TypeID!string)
             {

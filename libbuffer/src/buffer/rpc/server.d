@@ -15,11 +15,11 @@ class Server(Business)
     ubyte[] Handler(ubyte[] data)
     {
         ushort messageId;
-        TypeInfo_Class messageClass;
+        TypeInfo_Class messageName;
         string method;
-        Variant[] params = Message.deserialize(data, messageId, messageClass, method);
+        Variant[] params = Message.deserialize(data, messageId, messageName, method);
 
-        if ((messageClass is null) || (params is null))
+        if (params is null)
         {
             return null;
         }
@@ -34,17 +34,35 @@ class Server(Business)
 
                 alias typeof(funcs[0]) func;
                 alias ParameterTypeTuple!func ParameterTypes;
-                alias ReturnType!func RT;
+                alias ReturnType!func T;
 
-                mixin(`
-                    if (method == "` ~ member ~ `")
-                    {
-                        assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                static assert((is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
+                     || is(T == long) || is(T == ulong) || is(T == float) || is(T == double) || is(T == bool) || is(T == char)
+                     || is(T == string) || (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))),
+                        "The function of RPC call return type is incorrect, function: " ~ member);
 
-                        RT msg_ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
-                        return msg_ret.serialize();
-                    }
-                `);
+                static if (isBuiltinType!T)
+                {
+                    mixin(`
+                        if (method == "` ~ member ~ `")
+                        {
+                            assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            T ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
+                            return Message.serialize_without_msginfo(method, ret);
+                        }
+                    `);
+                }
+                else
+                {
+                    mixin(`
+                        if (method == "` ~ member ~ `")
+                        {
+                            assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            T ret = business.` ~ member ~ `(` ~ CombinationParams!ParameterTypes ~ `);
+                            return ret.serialize();
+                        }
+                    `);
+                }
             }
         }
 

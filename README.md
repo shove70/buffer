@@ -52,11 +52,11 @@ void main()
     writeln(buf);
 	
 	ushort messageId;
-    TypeInfo_Class messageClass;
+    TypeInfo_Class messageName;
     string method;
-    Message.getMessageInfo(buf, messageId, messageClass, method);
+    Message.getMessageInfo(buf, messageId, messageName, method);
 
-    switch (messageClass.name)
+    switch (messageName.name)
     {
     case "app.Sample":
         Sample sam = Message.deserialize!Sample(buf);
@@ -107,12 +107,17 @@ void main()
     Message.settings(1229, CryptType.XTEA, "1234");
     Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
 
-    LoginRetInfo ret = Client.call!(LoginInfo, LoginRetInfo)("Login", "admin", "123456");
+    LoginRetInfo ret = Client.call!LoginRetInfo("Login", "admin", "123456");
     if (ret !is null)
     {
         writeln(ret.id);
         writeln(ret.name);
     }
+
+    // or:
+    
+    long userId = Client.call!long("GetUserId", "admin");
+    writeln(userId);
 }
 
 
@@ -144,6 +149,16 @@ class Business
         ret.name = name;
 
         return ret;
+    }
+
+    long GetUserId(string name)
+    {
+        // Access the database, query the user's id by name, assuming the user's ID is 1
+        int userId = 1;
+        // ...
+        // Query OK.
+        
+        return userId;
     }
 }
 

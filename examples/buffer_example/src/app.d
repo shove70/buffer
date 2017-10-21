@@ -43,11 +43,11 @@ void main_()
     writeln(buf);
 
     ushort messageId;
-    TypeInfo_Class messageClass;
+    TypeInfo_Class messageName;
     string method;
-    Message.getMessageInfo(buf, messageId, messageClass, method);
+    Message.getMessageInfo(buf, messageId, messageName, method);
 
-    switch (messageClass.name)
+    switch (messageName.name)
     {
     case "app.Sample":
         Sample sam = Message.deserialize!Sample(buf);

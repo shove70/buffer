@@ -24,7 +24,9 @@ public:
     alias ulong   uint64;
     alias float   float32;
     alias double  float64;
+    //char
     //string
+    //bool
 
     @property ushort messageId()
     {
@@ -38,70 +40,82 @@ public:
 
     static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
     {
-        assert(Message._crypt == CryptType.NONE || (Message._crypt != CryptType.NONE && Message._key != string.init),
+        assert(crypt == CryptType.NONE || (crypt != CryptType.NONE && key != string.init),
                 "Must specify key when specifying the type of CryptType.");
 
-        Message._magic = magic;
-        Message._crypt = crypt;
-        Message._key   = key;
+        _magic = magic;
+        _crypt = crypt;
+        _key   = key;
 
-        if (Message._crypt == CryptType.RSA)
+        if (_crypt == CryptType.RSA)
         {
-            Message._rsaKey = RSA.decodeKey(Message._key);
+            _rsaKey = RSA.decodeKey(Message._key);
 
-            assert(!Message._rsaKey.isNull, "Rsakey is incorrect.");
+            assert(!_rsaKey.isNull, "Rsakey is incorrect.");
         }
     }
 
-    static void getMessageInfo(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageClass, out string method)
+    static ubyte[] serialize_without_msginfo(Params...)(string method, Params params)
+    {
+        Variant[] t_params;
+
+        foreach(p; params)
+        {
+            t_params ~= Variant(p);
+        }
+
+        return Packet.build(_magic, _crypt, _key, _rsaKey, 0x00, method, t_params);
+    }
+
+    static void getMessageInfo(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageName, out string method)
     {
         Packet.parseInfo(buffer, messageId, method);
-        
+
         if (messageId in _messages)
         {
-            messageClass = _messages[messageId];
+            messageName = _messages[messageId];
         }
     }
 
-    static Variant[] deserialize(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageClass, out string method)
+    static Variant[] deserialize(ubyte[] buffer, out ushort messageId, out TypeInfo_Class messageName, out string method)
     {
-        Variant[] ret = Packet.parse(buffer, Message._magic, Message._crypt, Message._key, Message._rsaKey, messageId, method);
+        Variant[] ret = Packet.parse(buffer, _magic, _crypt, _key, _rsaKey, messageId, method);
 
         if (messageId in _messages)
         {
-            messageClass = _messages[messageId];
+            messageName = _messages[messageId];
         }
 
         return ret;
     }
 
-    static T deserialize(T)(ubyte[] buffer)
+    static T deserialize(T)(ubyte[] buffer) if (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))
     {
         string method;
 
         return deserialize!T(buffer, method);
     }
 
-    static T deserialize(T)(ubyte[] buffer, out string method)
+    static T deserialize(T)(ubyte[] buffer, out string method) if (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))
     {
         ushort messageId;
-        TypeInfo_Class messageClass;
-        Variant[] params = deserialize(buffer, messageId, messageClass, method);
+        TypeInfo_Class messageName;
+        Variant[] params = deserialize(buffer, messageId, messageName, method);
 
-        if (messageClass is null || params == null)
+        if (messageName is null || params == null)
             return null;
 
         T message = new T();
         if (message.messageId != messageId)
         {
-            assert(0, "The type T(" ~ T.classinfo.name ~ ") of the incoming template is incorrect. It should be " ~ messageClass.name);
+            assert(0, "The type T(" ~ T.classinfo.name ~ ") of the incoming template is incorrect. It should be " ~ messageName.name);
         }
 
         foreach (i, type; FieldTypeTuple!(T))
         {
-            mixin("
-                message." ~ FieldNameTuple!T[i] ~ " = params[" ~ i.to!string ~ "].get!" ~ type.stringof ~ ";
-            ");
+            mixin(`
+                message.` ~ FieldNameTuple!T[i] ~ ` = params[` ~ i.to!string ~ `].get!` ~ type.stringof ~ `;
+            `);
         }
 
         return message;
@@ -109,7 +123,7 @@ public:
 
 protected:
 
-    ubyte[] serialize(T)(T message, string method = string.init)
+    ubyte[] serialize(T)(T message, string method = string.init) if (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))
     {
         assert(message !is null, "The object to serialize cannot be null.");
 
@@ -117,14 +131,14 @@ protected:
 
         foreach (i, type; FieldTypeTuple!T)
         {
-            mixin("
-                params ~= Variant(message." ~ FieldNameTuple!T[i] ~ ");
-            ");
+            mixin(`
+                params ~= Variant(message.` ~ FieldNameTuple!T[i] ~ `);
+            `);
         }
 
-        return Packet.build(Message._magic, Message._crypt, Message._key, Message._rsaKey, message.messageId, method, params);
+        return Packet.build(_magic, _crypt, _key, _rsaKey, message.messageId, method, params);
     }
-    
+
     ushort _messageId;
     __gshared static TypeInfo_Class[ushort] _messages;
 
