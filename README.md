@@ -2,6 +2,7 @@
 
 ### Quick Start:
 
+```
 import std.stdio;
 import buffer.message;
 
@@ -66,9 +67,11 @@ void main()
         break;
     }
 }
+```
 
 ### RPC Client:
 
+```
 mixin(LoadBufferScript!`
     message(1) LoginInfo {
         string name;
@@ -113,9 +116,11 @@ ubyte[] TcpRequestHandler(ubyte[] data)
 
     return rec_data[0..len];
 }
+```
 
 ### RPC Server:
 
+```
 class Business
 {
     mixin(LoadBufferScript!`
@@ -191,3 +196,4 @@ void acceptHandler(shared Socket accept)
         }
     }
 }
+```
