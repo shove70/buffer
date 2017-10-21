@@ -36,7 +36,8 @@ class Server(Business)
                 alias ParameterTypeTuple!func ParameterTypes;
                 alias ReturnType!func T;
 
-                static assert((is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
+                static assert((
+                        is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
                      || is(T == long) || is(T == ulong) || is(T == float) || is(T == double) || is(T == bool) || is(T == char)
                      || is(T == string) || (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))),
                         "The function of RPC call return type is incorrect, function: " ~ member);

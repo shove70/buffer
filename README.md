@@ -51,7 +51,7 @@ void main()
     ubyte[] buf = sample.serialize();
     writeln(buf);
 	
-	ushort messageId;
+    ushort messageId;
     TypeInfo_Class messageName;
     string method;
     Message.getMessageInfo(buf, messageId, messageName, method);
