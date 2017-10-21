@@ -2,13 +2,10 @@
 
 ### Quick Start:
 
-```
 import std.stdio;
-
 import buffer.message;
 
 mixin (LoadBufferFile!"message.buffer");
-
 mixin (LoadBufferScript!`
 	message(3) Sample {
 		string	name;
@@ -16,7 +13,6 @@ mixin (LoadBufferScript!`
 		int16	sex;
 	}
 `);
-
 
 // Simple:
 
@@ -35,7 +31,6 @@ void main()
     writeln("age:\t",   sam.age);
     writeln("sex:\t",   sam.sex);
 }
-
 
 // Advanced:
 
@@ -72,8 +67,7 @@ void main()
     }
 }
 
-
-// RPC Client:
+### RPC Client:
 
 mixin(LoadBufferScript!`
     message(1) LoginInfo {
@@ -86,6 +80,24 @@ mixin(LoadBufferScript!`
         string name;
     }
 `);
+
+void main()
+{
+    Message.settings(1229, CryptType.XTEA, "1234");
+    Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
+
+    long userId = Client.call!long("GetUserId", "admin");
+    writeln(userId);
+
+    // or:
+
+    LoginRetInfo ret = Client.call!LoginRetInfo("Login", "admin", "123456");
+    if (ret !is null)
+    {
+        writeln(ret.id);
+        writeln(ret.name);
+    }
+}
 
 ubyte[] TcpRequestHandler(ubyte[] data)
 {
@@ -102,26 +114,7 @@ ubyte[] TcpRequestHandler(ubyte[] data)
     return rec_data[0..len];
 }
 
-void main()
-{
-    Message.settings(1229, CryptType.XTEA, "1234");
-    Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
-
-    LoginRetInfo ret = Client.call!LoginRetInfo("Login", "admin", "123456");
-    if (ret !is null)
-    {
-        writeln(ret.id);
-        writeln(ret.name);
-    }
-
-    // or:
-    
-    long userId = Client.call!long("GetUserId", "admin");
-    writeln(userId);
-}
-
-
-// RPC Server:
+### RPC Server:
 
 class Business
 {
@@ -137,6 +130,16 @@ class Business
         }
     `);
 
+    long GetUserId(string name)
+    {
+        // Access the database, query the user's id by name, assuming the user's ID is 1
+        int userId = 1;
+        // ...
+        // Query OK.
+        
+        return userId;
+    }
+
     LoginRetInfo Login(string name, string password)
     {
         // Access the database, check the user name and password, assuming the validation passed, the user's ID is 1
@@ -150,18 +153,7 @@ class Business
 
         return ret;
     }
-
-    long GetUserId(string name)
-    {
-        // Access the database, query the user's id by name, assuming the user's ID is 1
-        int userId = 1;
-        // ...
-        // Query OK.
-        
-        return userId;
-    }
 }
-
 
 __gshared Server!(Business) server;
 
@@ -199,5 +191,3 @@ void acceptHandler(shared Socket accept)
         }
     }
 }
-
-```
