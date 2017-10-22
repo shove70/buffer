@@ -23,6 +23,7 @@ int64,      dlang: long    0x07
 uint64,     dlang: ulong   0x08
 float32,    dlang: float   0x20
 float64,    dlang: double  0x21
+float128,   dlang: real    0x22
 bool,       dlang: bool    0x30
 char,       dlang: char    0x40
 string,     dlang: string  0x41

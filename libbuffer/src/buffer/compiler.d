@@ -79,7 +79,7 @@ private enum TokenType
 
 private const string[] keywords = [
     "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64",
-    "float32", "float64", "bool,", "char", "string"
+    "float32", "float64", "float128", "bool,", "char", "string"
 ];
 
 private struct Token

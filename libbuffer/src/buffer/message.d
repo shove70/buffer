@@ -24,6 +24,7 @@ public:
     alias ulong   uint64;
     alias float   float32;
     alias double  float64;
+    alias real    float128;
     //bool
     //char
     //string

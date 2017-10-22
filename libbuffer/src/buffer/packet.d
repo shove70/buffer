@@ -42,6 +42,8 @@ template TypeID(Type)
         const ubyte TypeID = 0x20;
     else static if (is(Unqual!Type == double))
         const ubyte TypeID = 0x21;
+    else static if (is(Unqual!Type == real))
+        const ubyte TypeID = 0x22;
     else static if (is(Unqual!Type == bool))
         const ubyte TypeID = 0x30;
     else static if (is(Unqual!Type == char))
@@ -111,6 +113,13 @@ package class Packet
             else if (v.type == typeid(double))
             {
                 put!double(v);
+            }
+            else if (v.type == typeid(real))
+            {
+                //put!real(v);
+                tlv ~= TypeID!real;
+                temp = realToUByte(v.get!real);
+                tlv ~= temp;
             }
             else if (v.type == typeid(bool))
             {
@@ -270,6 +279,12 @@ package class Packet
             else if (typeId == TypeID!double)
             {
                 get!double;
+            }
+            else if (typeId == TypeID!real)
+            {
+                //get!real;
+                ret ~= Variant(ubyteToReal(buffer[pos .. pos + real.sizeof]));
+                pos += real.sizeof;
             }
             else if (typeId == TypeID!bool)
             {

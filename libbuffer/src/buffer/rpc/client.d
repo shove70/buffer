@@ -19,8 +19,8 @@ class Client
 
     static T call(T, Params...)(string method, Params params) if (
             is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
-         || is(T == long) || is(T == ulong) || is(T == float) || is(T == double) || is(T == bool) || is(T == char)
-         || is(T == string) || (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message)))
+         || is(T == long) || is(T == ulong) || is(T == float) || is(T == double) || is(T == real) || is(T == bool)
+         || is(T == char) || is(T == string)|| (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message)))
     {
         assert(handler != null, "TcpRequestHandler must be bound.");
         assert(method.length > 0, "Paramter method must be set.");

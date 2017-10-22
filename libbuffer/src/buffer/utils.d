@@ -35,3 +35,25 @@ string byteToStr_hex(T = byte)(T[] buffer)
     }
     return app.data;
 }
+
+union Real
+{
+    real r;
+    ubyte[real.sizeof] b;
+}
+
+ubyte[] realToUByte(real value)
+{
+    Real r;
+    r.r = value;
+    
+    return cast(ubyte[])r.b.dup;
+}
+
+real ubyteToReal(ubyte[] value)
+{
+    Real r;
+    r.b = value;
+    
+    return r.r;
+}
