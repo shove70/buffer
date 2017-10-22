@@ -45,10 +45,10 @@ private string compiler(string source)()
 
         code.put("\tstatic this()\r\n");
         code.put("\t{\r\n");
-        code.put("\t\tif (" ~ sentence.id ~ " in _messages)\r\n");
-        code.put("\t\t{\r\n");
-        code.put("\t\t\tassert(0, \"message id conflict: " ~ sentence.id ~ "\");\r\n");
-        code.put("\t\t}\r\n");
+//        code.put("\t\tif (" ~ sentence.id ~ " in _messages)\r\n");
+//        code.put("\t\t{\r\n");
+//        code.put("\t\t\tassert(0, \"message id conflict: " ~ sentence.id ~ "\");\r\n");
+//        code.put("\t\t}\r\n");
         code.put("\t\t_messages[" ~ sentence.id ~ "] = " ~ sentence.name ~ ".classinfo;\r\n");
         code.put("\t}\r\n\r\n");
 
