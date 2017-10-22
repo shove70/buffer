@@ -56,7 +56,9 @@ private string compiler(string source)()
         code.put("\t{\r\n");
         code.put("\t\treturn super.serialize!(typeof(this))(this, method);\r\n");
         code.put("\t}\r\n");
-        code.put("}\r\n\r\n");
+        code.put("}\r\n");
+        code.put("alias _buffer__Message__Class__" ~ sentence.id ~ " = " ~ sentence.name ~ ";\r\n");
+        code.put("\r\n");
     }
 
     return code.data;
@@ -450,10 +452,6 @@ final static class Sample : buffer.message.Message
 
     static this()
     {
-        if (3 in _messages)
-        {
-            assert(0, "message id conflict: " ~ "3");
-        }
         _messages[3] = Sample.classinfo;
     }
 
@@ -462,4 +460,5 @@ final static class Sample : buffer.message.Message
         return super.serialize!(typeof(this))(this, method);
     }
 }
+alias _buffer__Message__Class__3 = Sample;
 */
