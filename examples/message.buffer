@@ -28,8 +28,8 @@ bool,       dlang: bool    0x30
 char,       dlang: char    0x40
 string,     dlang: string  0x41
 
-Magic, length,   MessageId, methodLength, method,           TLV（serialize), CRC
-2Bytes,int32(4), 2Bytes,    2Bytes,       string(size = N), size = N       , 2Bytes
+Magic, length,   nameLength, name,            methodLength, method,           TLV（serialize), CRC
+2Bytes,int32(4), 2Bytes,     string(size = N), 2Bytes,       string(size = N), size = N       , 2Bytes
 
 TLV:
 int8,      int16,     ..., string
