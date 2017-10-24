@@ -5,7 +5,7 @@ import buffer.message;
 mixin(LoadBufferFile!"message.buffer");
 
 mixin(LoadBufferScript!`
-	message(3) Sample {
+	message Sample {
 		string	name;
 		int32	age;
 		int16	sex;
@@ -23,7 +23,6 @@ void main()
     writeln(buf);
 
     Sample sam = Message.deserialize!Sample(buf);
-    writeln("msgid:\t", sam.messageId);
     writeln("name:\t",  sam.name);
     writeln("age:\t",   sam.age);
     writeln("sex:\t",   sam.sex);
@@ -42,16 +41,14 @@ void main_()
     ubyte[] buf = sample.serialize();
     writeln(buf);
 
-    ushort messageId;
-    TypeInfo_Class messageName;
+    string name;
     string method;
-    Message.getMessageInfo(buf, messageId, messageName, method);
+    Message.getMessageInfo(buf, name, method);
 
-    switch (messageName.name)
+    switch (name)
     {
-    case "app.Sample":
+    case "Sample":
         Sample sam = Message.deserialize!Sample(buf);
-        writeln("msgid:\t", sam.messageId);
         writeln("name:\t",  sam.name);
         writeln("age:\t",   sam.age);
         writeln("sex:\t",   sam.sex);

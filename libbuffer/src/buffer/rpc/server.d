@@ -14,10 +14,9 @@ class Server(Business)
 
     ubyte[] Handler(ubyte[] data)
     {
-        ushort messageId;
-        TypeInfo_Class messageName;
+        string name;
         string method;
-        Variant[] params = Message.deserialize(data, messageId, messageName, method);
+        Variant[] params = Message.deserialize(data, name, method);
 
         if (params is null)
         {

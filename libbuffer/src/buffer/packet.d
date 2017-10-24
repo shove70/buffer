@@ -54,90 +54,76 @@ template TypeID(Type)
         static assert(0, "Data types that are not supported: " ~ typeid(Type));
 }
 
-package class Packet
+package:
+
+class Packet
 {
-    static ubyte[] build(ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, ushort messageId, string method, Variant[] params)
+    static ubyte[] build(ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, string name, string method, Variant[] params)
     {
-        assert(params.length > 0, "Parameter params must be provided.");
+        assert(name.length <= 255, "Paramter name cannot be greater than 255 characters.");
         assert(method.length <= 255, "Paramter method cannot be greater than 255 characters.");
+        assert(params.length > 0, "Parameter params must be provided.");
 
-        ubyte[] temp;
         ubyte[] tlv;
-
-        void put(T)(Variant v)
-        {
-            tlv ~= TypeID!T;
-            temp = new ubyte[T.sizeof];
-            temp.write!T(v.get!T, 0);
-            tlv ~= temp;
-        }
+        BufferBuilder bb = new BufferBuilder(&tlv);
 
         foreach (v; params)
         {
             if (v.type == typeid(byte))
             {
-                put!byte(v);
+                bb.put!byte(v.get!byte, true, false, 0);
             }
             else if (v.type == typeid(ubyte))
             {
-                put!ubyte(v);
+                bb.put!ubyte(v.get!ubyte, true, false, 0);
             }
             else if (v.type == typeid(short))
             {
-                put!short(v);
+                bb.put!short(v.get!short, true, false, 0);
             }
             else if (v.type == typeid(ushort))
             {
-                put!ushort(v);
+                bb.put!ushort(v.get!ushort, true, false, 0);
             }
             else if (v.type == typeid(int))
             {
-                put!int(v);
+                bb.put!int(v.get!int, true, false, 0);
             }
             else if (v.type == typeid(uint))
             {
-                put!uint(v);
+                bb.put!uint(v.get!uint, true, false, 0);
             }
             else if (v.type == typeid(long))
             {
-                put!long(v);
+                bb.put!long(v.get!long, true, false, 0);
             }
             else if (v.type == typeid(ulong))
             {
-                put!ulong(v);
+                bb.put!ulong(v.get!ulong, true, false, 0);
             }
             else if (v.type == typeid(float))
             {
-                put!float(v);
+                bb.put!float(v.get!float, true, false, 0);
             }
             else if (v.type == typeid(double))
             {
-                put!double(v);
+                bb.put!double(v.get!double, true, false, 0);
             }
             else if (v.type == typeid(real))
             {
-                //put!real(v);
-                tlv ~= TypeID!real;
-                temp = realToUByte(v.get!real);
-                tlv ~= temp;
+                bb.put!real(v.get!real, true, false, 0);
             }
             else if (v.type == typeid(bool))
             {
-                put!bool(v);
+                bb.put!bool(v.get!bool, true, false, 0);
             }
             else if (v.type == typeid(char))
             {
-                put!char(v);
+                bb.put!char(v.get!char, true, false, 0);
             }
             else if (v.type == typeid(string))
             {
-                tlv ~= TypeID!string;
-                string str = v.get!string;
-                temp = new ubyte[4];
-                temp.write!int(cast(int) str.length, 0);
-                tlv ~= temp;
-                temp = cast(ubyte[]) str;
-                tlv ~= temp;
+                bb.put!string(v.get!string, true, true, 4);
             }
             else
             {
@@ -160,37 +146,41 @@ package class Packet
             break;
         }
 
-        ubyte[] method_buf = cast(ubyte[]) method;
-        ubyte[] buffer = new ubyte[10];
-
-        buffer.write!ushort(magic, 0);
-        buffer.write!int(cast(int)(2 + 2 + method_buf.length + tlv.length + 2), 2);
-        buffer.write!ushort(messageId, 6);
-        buffer.write!ushort(cast(ushort) method_buf.length, 8);
-        if (method_buf.length > 0)
-            buffer ~= method_buf;
+        ubyte[] buffer;
+        bb = new BufferBuilder(&buffer);
+        bb.put!ushort(magic, false, false, 0);
+        bb.put!int(0, false, false, 0);		// length, seize a seat.
+        bb.put!string(name, false, true, 2);
+        bb.put!string(method, false, true, 2);
         buffer ~= tlv;
+        buffer.write!int(cast(int)(buffer.length - 2 - 4 + 2), 2);
         buffer ~= strToByte_hex(MD5(buffer)[0 .. 4]);
 
         return buffer;
     }
 
-    static void parseInfo(ubyte[] buffer, out ushort messageId, out string method)
+    static size_t parseInfo(ubyte[] buffer, out string name, out string method)
     {
-        assert(buffer != null && buffer.length >= 12, "Incorrect buffer length.");
+        assert(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
-        messageId = buffer.peek!ushort(6);
-
-        ushort t_method_len = buffer.peek!ushort(8);
-        if (t_method_len > 0)
+        ushort len1 = buffer.peek!ushort(6);
+        if (len1 > 0)
         {
-            method = cast(string) buffer[10 .. 10 + t_method_len];
+            name = cast(string) buffer[8 .. 8 + len1];
         }
+
+        ushort len2 = buffer.peek!ushort(8 + len1);
+        if (len2 > 0)
+        {
+            method = cast(string) buffer[10 + len1 .. 10 + len1 + len2];
+        }
+
+        return 10 + len1 + len2;
     }
 
-    static Variant[] parse(ubyte[] buffer, ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, out ushort messageId, out string method)
+    static Variant[] parse(ubyte[] buffer, ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, out string name, out string method)
     {
-        assert(buffer != null && buffer.length >= 12, "Incorrect buffer length.");
+        assert(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
         ushort t_magic, t_crc;
         int t_len;
@@ -205,10 +195,8 @@ package class Packet
         if (strToByte_hex(MD5(buffer[0 .. $ - 2])[0 .. 4]) != buffer[$ - 2 .. $])
             return null;
 
-        parseInfo(buffer, messageId, method);
-
-        ushort t_method_len = buffer.peek!ushort(8);
-        buffer = buffer[10 + t_method_len .. $ - 2];
+        size_t tlv_pos = parseInfo(buffer, name, method);
+        buffer = buffer[tlv_pos .. $ - 2];
 
         final switch (crypt)
         {
@@ -308,5 +296,60 @@ package class Packet
         }
 
         return ret;
+    }
+}
+
+class BufferBuilder
+{
+    public ubyte[]* buffer;
+
+    this(ubyte[]* buffer)
+    {
+        this.buffer = buffer;
+    }
+
+    size_t put(T)(T value, bool isWriteTypeInfo, bool isWriteLengthInfo, int lengthBytes)
+    {
+        assert(lengthBytes == 0 || lengthBytes == 2 || lengthBytes == 4);
+
+        ubyte[] buf_data;
+        size_t len;
+
+        if (isWriteTypeInfo)
+        {
+            *buffer ~= TypeID!T;
+        }
+
+        static if (is(Unqual!T == string))
+        {
+            buf_data = cast(ubyte[])value;
+            len = buf_data.length;
+        }
+        else static if (is(Unqual!T == real))
+        {
+            buf_data = realToUByte(value);
+            len = real.sizeof;
+        }
+        else
+        {
+            buf_data = new ubyte[T.sizeof];
+            buf_data.write!T(value, 0);
+            len = T.sizeof;
+        }
+
+        if (isWriteLengthInfo && lengthBytes > 0)
+        {
+            ubyte[] buf_len = new ubyte[lengthBytes];
+            if (lengthBytes == 2)
+                buf_len.write!ushort(cast(ushort)len, 0);
+            else
+                buf_len.write!int(cast(int)len, 0);
+
+            *buffer ~= buf_len;
+        }
+
+        *buffer ~= buf_data;
+
+        return len;
     }
 }

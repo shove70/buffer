@@ -26,10 +26,9 @@ class Client
         assert(method.length > 0, "Paramter method must be set.");
 
         ubyte[] response = handler(Message.serialize_without_msginfo(method, params));
-        ushort messageId;
-        TypeInfo_Class messageName;
+        string name;
         string res_method;
-        Variant[] res_params = Message.deserialize(response, messageId, messageName, res_method);
+        Variant[] res_params = Message.deserialize(response, name, res_method);
         
         //assert(method == res_method);
 

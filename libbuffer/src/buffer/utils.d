@@ -36,6 +36,13 @@ string byteToStr_hex(T = byte)(T[] buffer)
     return app.data;
 }
 
+string getClassSimpleName(string input)
+{
+    long pos = lastIndexOf(input, '.');
+
+    return input[pos < 0 ? 0 : pos + 1 .. $];
+}
+
 union Real
 {
     real r;

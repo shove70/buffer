@@ -5,12 +5,12 @@ import buffer.message;
 import buffer.rpc.client;
 
 mixin(LoadBufferScript!`
-    message(1) LoginInfo {
+    message LoginInfo {
         string name;
         string password;
     }
 
-    message(2) LoginRetInfo {
+    message LoginRetInfo {
         int32  id;
         string name;
     }

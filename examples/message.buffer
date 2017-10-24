@@ -1,4 +1,4 @@
-message(1) RegisterInfo {
+message RegisterInfo {
 	string  name;
 	string  password;
 	int8    age;
@@ -6,7 +6,7 @@ message(1) RegisterInfo {
 	string  email;
 }
 
-message(2) LoginInfo {
+message LoginInfo {
 	string  name;
 	string  password;
 	int32   hallNo;
