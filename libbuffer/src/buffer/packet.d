@@ -182,7 +182,7 @@ class Packet
     {
         assert(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
-        ushort t_magic, t_crc;
+        ushort t_magic;
         int t_len;
         t_magic = buffer.peek!ushort(0);
         t_len = buffer.peek!int(2);
@@ -191,7 +191,6 @@ class Packet
             return null;
 
         buffer = buffer[0 .. t_len + 6];
-        t_crc = buffer.peek!ushort(buffer.length - 2);
         if (strToByte_hex(MD5(buffer[0 .. $ - 2])[0 .. 4]) != buffer[$ - 2 .. $])
             return null;
 
