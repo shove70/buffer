@@ -47,6 +47,13 @@ public:
         }
     }
 
+    static void settings(ushort magic, RSAKeyInfo rsaKey)
+    {
+        _magic = magic;
+        _crypt = CryptType.RSA;
+        _rsaKey = rsaKey;
+    }
+
     static ubyte[] serialize_without_msginfo(Params...)(string method, Params params)
     {
         Variant[] t_params;
