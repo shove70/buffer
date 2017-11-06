@@ -99,34 +99,34 @@ private struct Token
 private Token[] lexer(string source)
 {
     /* State transition diagram:
-	0:	none		1: word			2: {		3: ;		4: }
-		-1: /		-2: //			-3: /*
+    0:	none      1: word      2: {      3: ;      4: }
+    -1: /        -2: //       -3: /*
 
-	0	-> \s[ \f\n\r\t\v]      0
-		-> A..Za..z_            1
-		-> {                    2 -> add token -> 0
-		-> ;                    3 -> add token -> 0
-		-> }                    4 -> add token -> 0
-		-> /                    hang state, -1
-		-> other                Exception
-	1	-> \s[ \f\n\r\t\v]      1 -> add token -> 0
-		-> A..Za..z0..9_        1
-		-> {                    1 -> add token -> 2 -> add token -> 0
-		-> ;                    1 -> add token -> 3 -> add token -> 0
-		-> }                    1 -> add token -> 4 -> add token -> 0
-		-> /                    hang state, -1
-		-> other                Exception
-	2	->                      0
-	3	->                      0
-	4	->                      0
-	-1	-> /                    -2
-		-> *                    -3
-		-> other                Exception
-	-2	-> \n                   restore state, hang = 0
-		-> other                skip
-	-3	-> /                    if last is * then restore state & hang = 0, else skip
-		-> other                skip
-	*/
+    0   -> \s[ \f\n\r\t\v]      0
+        -> A..Za..z_            1
+        -> {                    2 -> add token -> 0
+        -> ;                    3 -> add token -> 0
+        -> }                    4 -> add token -> 0
+        -> /                    hang state, -1
+        -> other                Exception
+    1   -> \s[ \f\n\r\t\v]      1 -> add token -> 0
+        -> A..Za..z0..9_        1
+        -> {                    1 -> add token -> 2 -> add token -> 0
+        -> ;                    1 -> add token -> 3 -> add token -> 0
+        -> }                    1 -> add token -> 4 -> add token -> 0
+        -> /                    hang state, -1
+        -> other                Exception
+    2   ->                      0
+    3   ->                      0
+    4   ->                      0
+   -1   -> /                    -2
+        -> *                    -3
+        -> other                Exception
+   -2   -> \n                   restore state, hang = 0
+        -> other                skip
+   -3   -> /                    if last is * then restore state & hang = 0, else skip
+        -> other                skip
+    */
 
     Token[] tokens;
     int state = 0;
