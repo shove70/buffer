@@ -13,6 +13,6 @@
 		"libbuffer/src"
 	],
 	"dependencies" : {
-		"cryption": "~>0.0.16"
+		"cryption": "~>0.1.0"
 	}
 }
