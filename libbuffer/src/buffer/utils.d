@@ -43,24 +43,29 @@ string getClassSimpleName(string input)
     return input[pos < 0 ? 0 : pos + 1 .. $];
 }
 
-union Real
-{
-    real r;
-    ubyte[real.sizeof] b;
-}
-
 ubyte[] realToUByte(real value)
 {
-    Real r;
-    r.r = value;
-    
-    return cast(ubyte[])r.b.dup;
+    ubyte[] buf = new ubyte[real.sizeof];
+    ubyte* p = cast(ubyte*)&value;
+    int i = real.sizeof;
+
+    while (i-- > 0)
+    {
+        buf[real.sizeof - i - 1] = p[i];
+    }
+
+    return buf;
 }
 
 real ubyteToReal(ubyte[] value)
 {
-    Real r;
-    r.b = value;
+    real r;
+    ubyte* p = cast(ubyte*)&r;
     
-    return r.r;
+    for (int i = 0; i < value.length; i++)
+    {
+        p[value.length - i - 1] = value[i];
+    }
+    
+    return r;
 }
