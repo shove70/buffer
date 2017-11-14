@@ -19,14 +19,14 @@ int16,      dlang: short   c++: short      0x03
 uint16,     dlang: ushort  c++: ushort     0x04 (unsigned short)
 int32,      dlang: int     c++: int        0x05
 uint32,     dlang: uint    c++: uint       0x06 (unsigned int)
-int64,      dlang: long    c++: int64      0x07 (long long)
-uint64,     dlang: ulong   c++: uint64     0x08 (unsigned long long)
+int64,      dlang: long    c++: int64      0x07 (long or long long)
+uint64,     dlang: ulong   c++: uint64     0x08 (unsigned long or long long)
 float32,    dlang: float   c++: float      0x20 
 float64,    dlang: double  c++: double     0x21
 float128,   dlang: real    c++: NO SUPPORT 0x22
 bool,       dlang: bool    c++: bool       0x30
 char,       dlang: char    c++: ubyte      0x40 (unsigned char)
-string,     dlang: string  c++: string     0x41 (or char*)
+string,     dlang: string  c++: string     0x41 (or char*, const char*)
 
 Magic, length,   nameLength, name,             methodLength, method,           TLV（serialize), CRC
 2Bytes,int32(4), 2Bytes,     string(size = N), 2Bytes,       string(size = N), size = N       , 2Bytes
