@@ -38,7 +38,7 @@ string byteToStr_hex(T = byte)(T[] buffer)
 
 string getClassSimpleName(string input)
 {
-    long pos = lastIndexOf(input, '.');
+    int pos = cast(int)lastIndexOf(input, '.');
 
     return input[pos < 0 ? 0 : pos + 1 .. $];
 }
