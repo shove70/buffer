@@ -2,8 +2,10 @@
 
 At present, it has only dlang and C++ implementations, and will add more language support in the future, such as: Lua, Java, python, ruby, golang, rust...
 
-C++ project on github: 
+C++ project on github:
+
 https://github.com/shove70/buffc
+
 https://github.com/shove70/crypt (dependencies)
 
 
