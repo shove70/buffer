@@ -51,7 +51,7 @@ private string compiler(string source)()
 
 /// lexer
 
-private enum TokenType
+enum TokenType
 {
     Define            = 1,           // message
     Keyword           = 2,           // type: int8...
@@ -66,7 +66,7 @@ private const string[] keywords = [
     "float32", "float64", "float128", "bool,", "char", "string"
 ];
 
-private struct Token
+struct Token
 {
     TokenType type;
     string name;
@@ -96,7 +96,7 @@ private struct Token
     }
 }
 
-private Token[] lexer(string source)
+Token[] lexer(string source)
 {
     /* State transition diagram:
     0:	none      1: word      2: {      3: ;      4: }
@@ -289,23 +289,23 @@ private string extractScriptfragment(string source)
 
 /// parser
 
-private struct Field
+struct Field
 {
     string type;
     string name;
 }
 
-private struct Sentence
+struct Sentence
 {
     string name;
     Field[] fields;
 }
 
-private Sentence[] parser(Token[] tokens)
+Sentence[] parser(Token[] tokens)
 {
     Sentence[] sentences;
     int pos;
-    while (pos < tokens.length - 1)
+    while (pos < cast(int)tokens.length - 1)
     {
         if (tokens[pos].type != TokenType.Define)
         {
@@ -320,7 +320,7 @@ private Sentence[] parser(Token[] tokens)
 
 private Sentence parser_define(Token[] tokens, ref int pos)
 {
-    if ((tokens.length - pos < 4) || (tokens[pos].type != TokenType.Define) || (tokens[pos + 1].type != TokenType.Identifier) || (tokens[pos + 2].type != TokenType.DelimiterOpen))
+    if ((cast(int)tokens.length - pos < 4) || (tokens[pos].type != TokenType.Define) || (tokens[pos + 1].type != TokenType.Identifier) || (tokens[pos + 2].type != TokenType.DelimiterOpen))
     {
         assert(0, "Syntax error at " ~ tokens[pos].name);
     }
@@ -344,13 +344,13 @@ private Sentence parser_define(Token[] tokens, ref int pos)
 
 private Nullable!Field parser_field(Token[] tokens, ref int pos)
 {
-    if ((tokens.length - pos >= 1) && (tokens[pos].type == TokenType.DelimiterClose))
+    if ((cast(int)tokens.length - pos >= 1) && (tokens[pos].type == TokenType.DelimiterClose))
     {
         pos++;
         return Nullable!Field();
     }
 
-    if ((tokens.length - pos < 3) || (tokens[pos].type != TokenType.Keyword)
+    if ((cast(int)tokens.length - pos < 3) || (tokens[pos].type != TokenType.Keyword)
             || (tokens[pos + 1].type != TokenType.Identifier)
             || (tokens[pos + 2].type != TokenType.SentenceEnd))
     {

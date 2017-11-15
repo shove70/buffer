@@ -187,7 +187,7 @@ class Packet
         t_magic = buffer.peek!ushort(0);
         t_len = buffer.peek!int(2);
 
-        if ((t_magic != magic) || (t_len > buffer.length - 6))
+        if ((t_magic != magic) || (t_len > cast(int)buffer.length - 6))
             return null;
 
         buffer = buffer[0 .. t_len + 6];
