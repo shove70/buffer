@@ -12,7 +12,7 @@ class Server(Business)
     static immutable string[] builtinFunctions = [ "__ctor", "__dtor", "opEquals", "opCmp", "toHash", "toString", "Monitor", "factory" ];
     Business business = new Business();
 
-    ubyte[] Handler(ubyte[] data)
+    ubyte[] Handler(ubyte[] data, string remoteAddress = string.init, ushort remotePort = 0)
     {
         string name;
         string method;
@@ -32,6 +32,7 @@ class Server(Business)
                 static assert(funcs.length == 1, "The function of RPC call doesn't allow the overloads, function: " ~ member);
 
                 alias typeof(funcs[0]) func;
+                alias ParameterIdentifierTuple!func ParameterIdentifiers;
                 alias ParameterTypeTuple!func ParameterTypes;
                 alias ReturnType!func T;
 
@@ -47,7 +48,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-                            T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
+                            T ret = business.` ~ member ~ `(` ~ combineParams!(ParameterIdentifiers, ParameterTypes)(remoteAddress, remotePort) ~ `);
                             return Message.serialize_without_msginfo(method, ret);
                         }
                     `);
@@ -58,7 +59,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-                            T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
+                            T ret = business.` ~ member ~ `(` ~ combineParams!(ParameterIdentifiers, ParameterTypes)(remoteAddress, remotePort) ~ `);
                             return ret.serialize();
                         }
                     `);
@@ -69,7 +70,7 @@ class Server(Business)
         assert(0, "The server does not implement client call method: " ~ method);
     }
 
-    static string combineParams(ParameterTypes...)()
+    static string combineParams(ParameterIdentifiers, ParameterTypes...)(string remoteAddress, ushort remotePort)
     {
         string s;
 
@@ -77,7 +78,13 @@ class Server(Business)
         {
             if (i > 0)
                 s ~= ", ";
-            s ~= ("params[" ~ i.to!string ~ "].get!" ~ type.stringof);
+            
+            if (ParameterIdentifiers[i] == "__SERVER_VARIABLE_CLIENT_IP__")
+                s ~= `"` ~ remoteAddress ~ `"`;
+            else if (ParameterIdentifiers[i] == "__SERVER_VARIABLE_CLIENT_PORT__")
+                s ~= remotePort.to!string;
+            else
+                s ~= ("params[" ~ i.to!string ~ "].get!" ~ type.stringof);
         }
 
         return s;
