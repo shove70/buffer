@@ -3,7 +3,7 @@ import std.socket;
 import std.concurrency;
 import core.thread;
 
-import buffer.message;
+import buffer;
 import buffer.rpc.server;
 
 

@@ -1,7 +1,7 @@
 import std.stdio;
 import std.socket;
 
-import buffer.message;
+import buffer;
 import buffer.rpc.client;
 
 mixin(LoadBufferScript!`

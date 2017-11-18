@@ -1,6 +1,6 @@
 import std.stdio;
 
-import buffer.message;
+import buffer;
 
 mixin(LoadBufferFile!"message.buffer");
 
