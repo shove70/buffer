@@ -3,18 +3,8 @@ import std.stdio;
 import std.file;
 import std.conv;
 import std.string;
-import std.uuid;
-import std.random;
 
 import buffer.compiler;
-
-string genUuid()
-{
-	Xorshift192 gen;
-	gen.seed(unpredictableSeed);
-	auto uuid = randomUUID(gen);
-	return uuid.toString.replace("-", "").toUpper();
-}
 
 void main(string[] args)
 {
@@ -26,11 +16,9 @@ void main(string[] args)
 
     Token[] tokens = lexer(std.file.readText(args[1]));
     Sentence[] sentences = parser(tokens);
-    string uuid = genUuid();
     
     Appender!string code;
-    code.put("#ifndef _Included_BUFFC_MESSAGE_" ~ uuid ~ "_H\r\n");
-    code.put("#define _Included_BUFFC_MESSAGE_" ~ uuid ~ "_H\r\n\r\n");
+    code.put("#pragma once\r\n\r\n");
     code.put("#include <vector>\r\n");
     code.put("#include \"message.h\"\r\n\r\n");
     code.put("using namespace std;\r\n");
@@ -66,10 +54,8 @@ void main(string[] args)
 
         code.put(");\r\n");
         code.put("\t}\r\n");
-        code.put("};\r\n\r\n");
+        code.put("};\r\n");
     }
-
-    code.put("#endif\r\n");
 
     std.file.write(args[2], cast(ubyte[])code.data);
 }
