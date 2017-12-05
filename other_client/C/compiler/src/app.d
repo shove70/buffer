@@ -22,7 +22,7 @@ void main(string[] args)
     code.put("#include <vector>\r\n");
     code.put("#include \"message.h\"\r\n\r\n");
     code.put("using namespace std;\r\n");
-    code.put("using namespace buffc;\r\n\r\n");
+    code.put("using namespace buffer;\r\n\r\n");
 
     foreach (sentence; sentences)
     {
