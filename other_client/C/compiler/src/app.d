@@ -14,13 +14,19 @@ void main(string[] args)
         return;
     }
 
+    if (!std.file.exists(args[1]))
+    {
+        writeln("The input file " ~ args[1] ~ " not exists.");
+        return;
+    }
+
     Token[] tokens = lexer(std.file.readText(args[1]));
     Sentence[] sentences = parser(tokens);
     
     Appender!string code;
     code.put("#pragma once\r\n\r\n");
     code.put("#include <vector>\r\n");
-    code.put("#include \"message.h\"\r\n\r\n");
+    code.put("#include \"{Replace the real path}/message.h\"\r\n\r\n");
     code.put("using namespace std;\r\n");
     code.put("using namespace buffer;\r\n\r\n");
 
@@ -54,7 +60,7 @@ void main(string[] args)
 
         code.put(");\r\n");
         code.put("\t}\r\n");
-        code.put("};\r\n");
+        code.put("};\r\n\r\n");
     }
 
     std.file.write(args[2], cast(ubyte[])code.data);
