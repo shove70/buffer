@@ -32,7 +32,8 @@ void main(string[] args)
 
     foreach (sentence; sentences)
     {
-        code.put("class " ~ sentence.name ~ " : Message {\r\n");
+        code.put("class " ~ sentence.name ~ " : Message\r\n");
+        code.put("{\r\n");
         code.put("public:\r\n");
         code.put("\tstring _className = \"" ~ sentence.name ~ "\";\r\n\r\n");
 
@@ -42,7 +43,8 @@ void main(string[] args)
         }
 
         code.put("\r\n");
-        code.put("\tvoid setValue(vector<Any>& params) {\r\n");
+        code.put("\tvoid setValue(vector<Any>& params)\r\n");
+        code.put("\t{\r\n");
 
         foreach (i, field; sentence.fields)
         {
@@ -50,7 +52,8 @@ void main(string[] args)
         }
 
         code.put("\t}\r\n\r\n");
-        code.put("\tvoid serialize(vector<ubyte>& buffer, string method = \"\") {\r\n");
+        code.put("\tvoid serialize(vector<ubyte>& buffer, string method = \"\")\r\n");
+        code.put("\t{\r\n");
         code.put("\t\tMessage::serialize(buffer, \"" ~ sentence.name ~ "\", method");
 
         foreach (i, field; sentence.fields)
