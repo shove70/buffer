@@ -32,14 +32,14 @@ public:
 
     static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
     {
-        assert(crypt == CryptType.NONE || (crypt != CryptType.NONE && key != string.init),
+        assert((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
                 "Must specify key when specifying the type of CryptType.");
 
         _magic = magic;
         _crypt = crypt;
         _key   = key;
 
-        if (_crypt == CryptType.RSA)
+        if ((_crypt == CryptType.RSA) || (_crypt == CryptType.RSA_XTEA_MIXIN))
         {
             _rsaKey = RSA.decodeKey(Message._key);
 
@@ -47,10 +47,10 @@ public:
         }
     }
 
-    static void settings(ushort magic, RSAKeyInfo rsaKey)
+    static void settings(ushort magic, RSAKeyInfo rsaKey, bool mixinXteaMode = false)
     {
         _magic = magic;
-        _crypt = CryptType.RSA;
+        _crypt = mixinXteaMode ? CryptType.RSA_XTEA_MIXIN : CryptType.RSA;
         _rsaKey = rsaKey;
     }
 
@@ -89,7 +89,9 @@ public:
         Variant[] params = deserialize(buffer, name, method);
 
         if (name == string.init || params == null)
+        {
             return null;
+        }
 
         T message = new T();
         if (getClassSimpleName(T.classinfo.name) != name)

@@ -6,7 +6,7 @@ import std.variant;
 
 import buffer.message;
 
-alias TcpRequestHandler = ubyte[]delegate(ubyte[] data);
+alias TcpRequestHandler = ubyte[] delegate(ubyte[] data);
 
 class Client
 {

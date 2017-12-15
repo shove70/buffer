@@ -14,10 +14,11 @@ import buffer.utils;
 
 enum CryptType
 {
-    NONE = 0,
-    XTEA = 1,
-    AES  = 2,
-    RSA  = 3
+    NONE            = 0,
+    XTEA            = 1,
+    AES             = 2,
+    RSA             = 3,
+    RSA_XTEA_MIXIN  = 4
 }
 
 template TypeID(Type)
@@ -144,6 +145,8 @@ class Packet
         case CryptType.RSA:
             tlv = RSA.encrypt(rsaKey, tlv);
             break;
+        case CryptType.RSA_XTEA_MIXIN:
+            tlv = RSA.encrypt(rsaKey, tlv, true);
         }
 
         ubyte[] buffer;
@@ -188,11 +191,15 @@ class Packet
         t_len = buffer.peek!int(2);
 
         if ((t_magic != magic) || (t_len > cast(int)buffer.length - 6))
+        {
             return null;
+        }
 
         buffer = buffer[0 .. t_len + 6];
         if (strToByte_hex(MD5(buffer[0 .. $ - 2])[0 .. 4]) != buffer[$ - 2 .. $])
+        {
             return null;
+        }
 
         size_t tlv_pos = parseInfo(buffer, name, method);
         buffer = buffer[tlv_pos .. $ - 2];
@@ -209,6 +216,9 @@ class Packet
             break;
         case CryptType.RSA:
             buffer = RSA.decrypt(rsaKey, buffer);
+            break;
+        case CryptType.RSA_XTEA_MIXIN:
+            buffer = RSA.decrypt(rsaKey, buffer, true);
             break;
         }
 
