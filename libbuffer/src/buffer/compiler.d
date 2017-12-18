@@ -25,11 +25,11 @@ private string compiler(string source)()
     Sentence[] sentences = parser(tokens);
 
     Appender!string code;
-    code.put("import buffer.message;\r\n\r\n");
+    code.put("import buffer;\r\n\r\n");
 
     foreach (sentence; sentences)
     {
-        code.put("final static class " ~ sentence.name ~ " : buffer.message.Message\r\n");
+        code.put("final static class " ~ sentence.name ~ " : Message\r\n");
         code.put("{\r\n");
 
         foreach (field; sentence.fields)
@@ -366,9 +366,9 @@ private Nullable!Field parser_field(Token[] tokens, ref int pos)
 }
 
 /*
-import buffer.message;
+import buffer;
 
-final static class Sample : buffer.message.Message
+final static class Sample : Message
 {
     string name;
     int32 age;
