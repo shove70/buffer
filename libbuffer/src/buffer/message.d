@@ -4,6 +4,7 @@ import std.traits;
 import std.typecons;
 import std.variant;
 import std.conv : to;
+import std.exception;
 
 import cryption.rsa;
 
@@ -32,7 +33,7 @@ public:
 
     static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
     {
-        assert((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
+        enforce((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
                 "Must specify key when specifying the type of CryptType.");
 
         _magic = magic;
@@ -43,7 +44,7 @@ public:
         {
             _rsaKey = RSA.decodeKey(Message._key);
 
-            assert(!_rsaKey.isNull, "Rsakey is incorrect.");
+            enforce(!_rsaKey.isNull, "Rsakey is incorrect.");
         }
     }
 

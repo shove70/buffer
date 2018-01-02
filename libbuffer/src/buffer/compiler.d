@@ -6,6 +6,7 @@ import std.array;
 import std.typecons;
 import std.algorithm.searching;
 import std.uni;
+import std.exception;
 
 template LoadBufferFile(string fileName)
 {
@@ -169,7 +170,7 @@ Token[] lexer(string source)
             }
             else
             {
-                assert(0, "Invalid character: " ~ ch.to!string);
+                enforce(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case 1:
@@ -211,7 +212,7 @@ Token[] lexer(string source)
             }
             else
             {
-                assert(0, "Invalid character: " ~ ch.to!string);
+                enforce(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case -1:
@@ -225,7 +226,7 @@ Token[] lexer(string source)
             }
             else
             {
-                assert(0, "Invalid character: " ~ ch.to!string);
+                enforce(0, "Invalid character: " ~ ch.to!string);
             }
             break;
         case -2:
@@ -309,7 +310,7 @@ Sentence[] parser(Token[] tokens)
     {
         if (tokens[pos].type != TokenType.Define)
         {
-            assert(0, "Syntax error at " ~ tokens[pos].name);
+            enforce(0, "Syntax error at " ~ tokens[pos].name);
         }
 
         sentences ~= parser_define(tokens, pos);
@@ -322,7 +323,7 @@ private Sentence parser_define(Token[] tokens, ref int pos)
 {
     if ((cast(int)tokens.length - pos < 4) || (tokens[pos].type != TokenType.Define) || (tokens[pos + 1].type != TokenType.Identifier) || (tokens[pos + 2].type != TokenType.DelimiterOpen))
     {
-        assert(0, "Syntax error at " ~ tokens[pos].name);
+        enforce(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Sentence sentence;
@@ -354,7 +355,7 @@ private Nullable!Field parser_field(Token[] tokens, ref int pos)
             || (tokens[pos + 1].type != TokenType.Identifier)
             || (tokens[pos + 2].type != TokenType.SentenceEnd))
     {
-        assert(0, "Syntax error at " ~ tokens[pos].name);
+        enforce(0, "Syntax error at " ~ tokens[pos].name);
     }
 
     Field field;
