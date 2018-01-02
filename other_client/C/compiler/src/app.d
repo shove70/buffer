@@ -11,16 +11,14 @@ import buffer.compiler;
 
 void main(string[] args)
 {
-    if ((args.length < 3) || ((args[1] == "-c++11") && (args.length < 4)))
+    if (args.length < 3)
     {
-        writeln("Usage: ./buffc [-c++11] src_path dst_path");
+        writeln("Usage: ./buffc src_path dst_path");
         return;
     }
 
-    bool cpp11 = ((args[1] == "-c++11") || (args[1] == "-cpp11"));
-    
-    string src = args[1 + (cpp11 ? 1 : 0)];
-    string dst = args[2 + (cpp11 ? 1 : 0)];
+    string src = args[1];
+    string dst = args[2];
 
     if (!std.file.exists(src))
     {
@@ -67,17 +65,7 @@ void main(string[] args)
             code.put("class " ~ sentence.name ~ " : Message\r\n");
             code.put("{\r\n");
             code.put("public:\r\n");
-            if (cpp11)
-            {
-                code.put("\tstring _className = \"" ~ sentence.name ~ "\";\r\n\r\n");
-            }
-            else
-            {
-                code.put("\tstring _className()\r\n");
-                code.put("\t{\r\n");
-                code.put("\t\treturn \"" ~ sentence.name ~ "\";\r\n");
-                code.put("\t}\r\n\r\n");
-            }
+            code.put("\tstring _className() { return \"" ~ sentence.name ~ "\"; }\r\n\r\n");
 
             foreach (field; sentence.fields)
             {
