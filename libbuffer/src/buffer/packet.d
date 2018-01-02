@@ -5,6 +5,7 @@ import std.bitmanip;
 import std.traits;
 import std.typecons;
 import std.conv : to;
+import std.exception;
 
 import cryption.aes;
 import cryption.tea.xtea;
@@ -164,7 +165,7 @@ class Packet
 
     static size_t parseInfo(ubyte[] buffer, out string name, out string method)
     {
-        assert(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
+        enforce(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
         ushort len1 = buffer.peek!ushort(6);
         if (len1 > 0)
@@ -183,7 +184,7 @@ class Packet
 
     static Variant[] parse(ubyte[] buffer, ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, out string name, out string method)
     {
-        assert(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
+        enforce(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
         ushort t_magic;
         int t_len;

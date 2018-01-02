@@ -33,7 +33,7 @@ public:
 
     static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
     {
-        enforce((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
+        assert((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
                 "Must specify key when specifying the type of CryptType.");
 
         _magic = magic;
