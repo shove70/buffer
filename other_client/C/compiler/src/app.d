@@ -38,6 +38,13 @@ void main(string[] args)
         return;
     }
 
+    string libIncludePath = "{ Replace the real path }";
+
+    if (args.length >= 4)
+    {
+        libIncludePath = "../components/buffc";
+    }
+
     std.file.mkdirRecurse(dst);
     
     foreach (DirEntry e; dirEntries(src, SpanMode.shallow).filter!(a => a.isFile))
@@ -56,7 +63,7 @@ void main(string[] args)
         Appender!string code;
         code.put("#pragma once\r\n\r\n");
         code.put("#include <vector>\r\n");
-        code.put("#include \"{ Replace the real path }/message.h\"\r\n\r\n");
+        code.put("#include \"" ~ libIncludePath ~ "/message.h\"\r\n\r\n");
         code.put("using namespace std;\r\n");
         code.put("using namespace buffer;\r\n\r\n");
     
