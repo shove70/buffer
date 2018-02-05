@@ -69,7 +69,7 @@ void main(string[] args)
     
         foreach (sentence; sentences)
         {
-            code.put("class " ~ sentence.name ~ " : Message\r\n");
+            code.put("class " ~ sentence.name ~ " : public Message\r\n");
             code.put("{\r\n");
             code.put("public:\r\n");
             code.put("\tstring _className() { return \"" ~ sentence.name ~ "\"; }\r\n\r\n");
