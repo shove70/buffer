@@ -26,7 +26,7 @@ class Server(Business)
         {
             foreach(ref v; params)
             {
-                if (v.type == typeid(string) && v.get!string == char(27).to!string ~ "__SERVER__CLIENT_ADDRESS__")
+                if (v.type == typeid(string) && v.get!string == "__SERVER__CLIENT_ADDRESS__")
                 {
                     v = remoteAddress;
                 }
