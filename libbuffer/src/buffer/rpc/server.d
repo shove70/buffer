@@ -12,25 +12,14 @@ class Server(Business)
     static immutable string[] builtinFunctions = [ "__ctor", "__dtor", "opEquals", "opCmp", "toHash", "toString", "Monitor", "factory" ];
     Business business = new Business();
 
-    ubyte[] Handler(ubyte[] data, string remoteAddress = string.init)
+    ubyte[] Handler(Stuff, string Package = string.init)(ubyte[] data, Stuff stuff = null)
     {
         string name;
         string method;
         Variant[] params = Message.deserialize(data, name, method);
-
-        if (params is null)
+        if (stuff !is null)
         {
-            return null;
-        }
-        else
-        {
-            foreach(ref v; params)
-            {
-                if (v.type == typeid(string) && v.get!string == "__SERVER__CLIENT_ADDRESS__")
-                {
-                    v = remoteAddress;
-                }
-            }
+            params ~= Variant(stuff);
         }
 
         foreach (member; __traits(allMembers, Business))
@@ -51,12 +40,23 @@ class Server(Business)
                      || is(T == char) || is(T == string)|| (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))),
                         "The function of RPC call return type is incorrect, function: " ~ member);
 
+                static if (Package != string.init)
+                {
+                    mixin("import " ~ Package ~ ";");
+                }
+
                 static if (isBuiltinType!T)
                 {
                     mixin(`
                         if (method == "` ~ member ~ `")
                         {
-                            assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            int num = cast(int)(params.length - ` ~ ParameterTypes.length.to!string ~ `);
+                            if (num != 0 && num != 1)
+                            {
+                                import std.stdio;
+                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            }
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
                             return Message.serialize_without_msginfo(method, ret);
                         }
@@ -67,7 +67,13 @@ class Server(Business)
                     mixin(`
                         if (method == "` ~ member ~ `")
                         {
-                            assert(` ~ ParameterTypes.length.to!string ~ ` == params.length, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            int num = cast(int)(params.length - ` ~ ParameterTypes.length.to!string ~ `);
+                            if (num != 0 && num != 1)
+                            {
+                                import std.stdio;
+                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            }
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
                             return ret.serialize();
                         }
