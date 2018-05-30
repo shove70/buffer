@@ -7,9 +7,9 @@ import std.typecons;
 import std.conv : to;
 import std.exception;
 
-import cryption.aes;
-import cryption.tea.xtea;
-import cryption.rsa;
+import crypto.aes;
+import crypto.tea.xtea;
+import crypto.rsa;
 
 import buffer.utils;
 

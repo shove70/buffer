@@ -6,7 +6,7 @@ import std.variant;
 import std.conv : to;
 import std.exception;
 
-import cryption.rsa;
+import crypto.rsa;
 
 public import buffer.compiler;
 public import buffer.packet;
