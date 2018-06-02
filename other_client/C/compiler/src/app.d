@@ -42,7 +42,7 @@ void main(string[] args)
 
     if (args.length >= 4)
     {
-        libIncludePath = "../components/buffc";
+        libIncludePath = args[3];
     }
 
     std.file.mkdirRecurse(dst);
