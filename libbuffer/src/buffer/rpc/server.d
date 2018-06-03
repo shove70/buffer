@@ -12,14 +12,14 @@ class Server(Business)
     static immutable string[] builtinFunctions = [ "__ctor", "__dtor", "opEquals", "opCmp", "toHash", "toString", "Monitor", "factory" ];
     Business business = new Business();
 
-    ubyte[] Handler(Stuff, string Package = string.init)(ubyte[] data, Stuff stuff = null)
+    ubyte[] Handler(string Package = string.init, Stuff...)(ubyte[] data, Stuff stuff)
     {
         string name;
         string method;
         Variant[] params = Message.deserialize(data, name, method);
-        if (stuff !is null)
+        foreach (s; stuff)
         {
-            params ~= Variant(stuff);
+            params ~= Variant(s);
         }
 
         foreach (member; __traits(allMembers, Business))
@@ -51,7 +51,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             int num = cast(int)(params.length - ` ~ ParameterTypes.length.to!string ~ `);
-                            if (num != 0 && num != 1)
+                            if (num < 0)
                             {
                                 import std.stdio;
                                 writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
@@ -68,7 +68,7 @@ class Server(Business)
                         if (method == "` ~ member ~ `")
                         {
                             int num = cast(int)(params.length - ` ~ ParameterTypes.length.to!string ~ `);
-                            if (num != 0 && num != 1)
+                            if (num < 0)
                             {
                                 import std.stdio;
                                 writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
