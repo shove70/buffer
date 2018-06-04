@@ -8,7 +8,7 @@ import std.conv : to;
 import std.exception;
 
 import crypto.aes;
-import crypto.tea.xtea;
+import crypto.tea;
 import crypto.rsa;
 
 import buffer.utils;
