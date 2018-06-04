@@ -25,7 +25,7 @@ void main(string[] args)
         writeln("The src path" ~ src ~ " not exists.");
         return;
     }
-    
+
     if (std.file.isFile(src))
     {
         writeln("The src path" ~ src ~ " is a file, not a path.");
@@ -46,7 +46,7 @@ void main(string[] args)
     }
 
     std.file.mkdirRecurse(dst);
-    
+
     foreach (DirEntry e; dirEntries(src, SpanMode.shallow).filter!(a => a.isFile))
     {
         string srcFile = e.name;
@@ -59,14 +59,14 @@ void main(string[] args)
 
         Token[] tokens = lexer(std.file.readText(e.name));
         Sentence[] sentences = parser(tokens);
-        
+
         Appender!string code;
         code.put("#pragma once\r\n\r\n");
         code.put("#include <vector>\r\n");
         code.put("#include \"" ~ libIncludePath ~ "/message.h\"\r\n\r\n");
         code.put("using namespace std;\r\n");
-        code.put("using namespace buffer;\r\n\r\n");
-    
+        code.put("using namespace shove::buffer;\r\n\r\n");
+
         foreach (sentence; sentences)
         {
             code.put("class " ~ sentence.name ~ " : public Message\r\n");
@@ -78,31 +78,31 @@ void main(string[] args)
             {
                 code.put("\t" ~ field.type ~ " " ~ field.name ~ ";\r\n");
             }
-    
+
             code.put("\r\n");
             code.put("\tvoid setValue(vector<Any>& params)\r\n");
             code.put("\t{\r\n");
-    
+
             foreach (i, field; sentence.fields)
             {
                 code.put("\t\t" ~ field.name ~ " = params[" ~ i.to!string ~ "].cast<" ~ field.type ~ ">();\r\n");
             }
-    
+
             code.put("\t}\r\n\r\n");
             code.put("\tvoid serialize(vector<ubyte>& buffer, string method = \"\")\r\n");
             code.put("\t{\r\n");
             code.put("\t\tMessage::serialize(buffer, \"" ~ sentence.name ~ "\", method");
-    
+
             foreach (i, field; sentence.fields)
             {
                 code.put(", " ~ field.name);
             }
-    
+
             code.put(");\r\n");
             code.put("\t}\r\n");
             code.put("};\r\n\r\n");
         }
-    
+
         std.file.write(dstFilename, cast(ubyte[])code.data);
     }
 }
