@@ -10,7 +10,7 @@ import buffer.message;
 class Server(Business)
 {
     static immutable string[] builtinFunctions = [ "__ctor", "__dtor", "opEquals", "opCmp", "toHash", "toString", "Monitor", "factory" ];
-    private Business business;
+    private Business business = new Business();
 
     this()
     {
@@ -38,7 +38,6 @@ class Server(Business)
                 alias typeof(funcs[0]) func;
                 alias ParameterTypeTuple!func ParameterTypes;
                 alias ReturnType!func T;
-                alias paramsLength = lengthString!(ParameterTypes.length); // temp for dmd 2.080.1 on release
 
                 static assert((
                         is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
@@ -56,11 +55,11 @@ class Server(Business)
                     mixin(`
                         if (method == "` ~ member ~ `")
                         {
-                            if (params.length < ` ~ paramsLength ~ `)
+                            if (params.length < ` ~ ParameterTypes.length.to!string ~ `)
                             {
                                 import std.stdio;
-                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ paramsLength ~ ` parameters.");
-                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ paramsLength ~ ` parameters.");
+                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` lengthString!(ParameterTypes.length).");
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
@@ -78,11 +77,11 @@ class Server(Business)
                     mixin(`
                         if (method == "` ~ member ~ `")
                         {
-                            if (params.length < ` ~ lengthString!(ParameterTypes.length) ~ `)
+                            if (params.length < ` ~ ParameterTypes.length.to!string ~ `)
                             {
                                 import std.stdio;
-                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ paramsLength ~ ` parameters.");
-                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ paramsLength ~ ` parameters.");
+                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
@@ -109,24 +108,7 @@ class Server(Business)
         {
             if (i > 0) s ~= ", ";
 
-            //s ~= ("params[" ~ i.to!string ~ "].get!" ~ type.stringof);
-            s ~= ("params[" ~ char(i + 48) ~ "].get!" ~ type.stringof);
-        }
-
-        return s;
-    }
-
-    private static string lengthString(size_t length)() // temp for dmd 2.080.1 on release
-    {
-        string s;
-        size_t len = length;
-
-        while (len > 0)
-        {
-            char n = len % 10;
-            len /= 10;
-
-            s = "" ~ char(cast(char)(n + 48)) ~ s;
+            s ~= ("params[" ~ i.to!string ~ "].get!" ~ type.stringof);
         }
 
         return s;
