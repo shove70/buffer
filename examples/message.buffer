@@ -23,7 +23,7 @@ int64,      dlang: long    c++: int64      0x07 (long or long long)
 uint64,     dlang: ulong   c++: uint64     0x08 (unsigned long or long long)
 float32,    dlang: float   c++: float      0x20 
 float64,    dlang: double  c++: double     0x21
-float128,   dlang: real    c++: float128	   0x22 (long double)
+float128,   dlang: real    c++: float128   0x22 (long double)
 bool,       dlang: bool    c++: bool       0x30
 char,       dlang: char    c++: ubyte      0x40 (unsigned char)
 string,     dlang: string  c++: string     0x41 (or char*, const char*)
