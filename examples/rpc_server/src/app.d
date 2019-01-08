@@ -21,7 +21,7 @@ class Business
         }
     `);
 
-    LoginRetInfo Login(string name, string password)
+    LoginRetInfo login(string name, string password)
     {
         // Access the database, check the user name and password, assuming the validation passed, the user's ID is 1
         int userId = 1;
@@ -35,10 +35,10 @@ class Business
         return ret;
     }
 
-    long GetUserId(string name)
+    long getUserId(string name)
     {
         // Access the database, query the user's id by name, assuming the user's ID is 1
-        int userId = 1;
+        long userId = 1;
         // ...
         // Query OK.
 
@@ -78,8 +78,11 @@ void acceptHandler(shared Socket accept)
         if (len > 0)
         {
             ubyte[] ret_data = server.Handler(data[0..len]);
+
             if (ret_data != null)
+            {
                 socket.send(ret_data.dup);
+            }
         }
     }
 }

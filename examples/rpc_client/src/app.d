@@ -36,7 +36,7 @@ void main()
     Message.settings(1229, CryptType.XTEA, "1234");
     Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
 
-    LoginRetInfo ret = Client.call!LoginRetInfo("Login", "admin", "123456");
+    LoginRetInfo ret = Client.call!LoginRetInfo("login", "admin", "123456");
     if (ret !is null)
     {
         writeln(ret.id);
@@ -45,6 +45,6 @@ void main()
 
     // or:
 
-    long userId = Client.call!long("GetUserId", "admin");
+    long userId = Client.call!long("getUserId", "admin");
     writeln(userId);
 }

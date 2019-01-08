@@ -40,9 +40,9 @@ class Server(Business)
                 alias ReturnType!func T;
 
                 static assert((
-                        is(T == byte) || is(T == ubyte) || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
-                     || is(T == long) || is(T == ulong) || is(T == float) || is(T == double) || is(T == real) || is(T == bool)
-                     || is(T == char) || is(T == string)|| (BaseTypeTuple!T.length > 0 && is(BaseTypeTuple!T[0] == Message))),
+                        is(T == byte) || is(T == ubyte)  || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
+                     || is(T == long) || is(T == ulong)  || is(T == float) || is(T == double) || is(T == real) || is(T == bool)
+                     || is(T == char) || is(T == string) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message))),
                         "The function of RPC call return type is incorrect, function: " ~ member);
 
                 static if (Package != string.init)
@@ -63,10 +63,6 @@ class Server(Business)
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
-                            if (ret is null)
-                            {
-                                return null;
-                            }
 
                             return Message.serialize_without_msginfo(method, ret);
                         }
@@ -85,6 +81,7 @@ class Server(Business)
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
+
                             if (ret is null)
                             {
                                 return null;
