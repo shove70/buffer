@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/shove70/buffer.svg?branch=master)](https://travis-ci.org/shove70/buffer)
+
 # A simple and practical protocol buffer & RPC library.
 
 At present, it has only dlang and C++ implementations, and will add more language support in the future, such as: Lua, Java, python, ruby, golang, rust...
