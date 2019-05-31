@@ -138,10 +138,10 @@ class Packet
         case CryptType.NONE:
             break;
         case CryptType.XTEA:
-            tlv = Xtea.encrypt(tlv, key);
+            tlv = Xtea.encrypt(tlv, key, 64, PaddingMode.PKCS5);
             break;
         case CryptType.AES:
-            tlv = AESUtils.encrypt!AES128(tlv, key);
+            tlv = AESUtils.encrypt!AES128(tlv, key, iv, PaddingMode.PKCS5);
             break;
         case CryptType.RSA:
             tlv = RSA.encrypt(rsaKey, tlv);
@@ -210,10 +210,10 @@ class Packet
         case CryptType.NONE:
             break;
         case CryptType.XTEA:
-            buffer = Xtea.decrypt(buffer, key);
+            buffer = Xtea.decrypt(buffer, key, 64, PaddingMode.PKCS5);
             break;
         case CryptType.AES:
-            buffer = AESUtils.decrypt!AES128(buffer, key);
+            buffer = AESUtils.decrypt!AES128(buffer, key, iv, PaddingMode.PKCS5);
             break;
         case CryptType.RSA:
             buffer = RSA.decrypt(rsaKey, buffer);
@@ -307,6 +307,10 @@ class Packet
 
         return ret;
     }
+
+private:
+
+    static ubyte[] iv = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 class BufferBuilder
