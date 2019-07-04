@@ -5,11 +5,11 @@ import buffer.message;
 mixin(LoadBufferFile!"message.buffer");
 
 mixin(LoadBufferScript!`
-	message Sample {
-		string	name;
-		int32	age;
-		int16	sex;
-	}
+    message Sample {
+        string  name;
+        int32   age;
+        int16   sex;
+    }
 `);
 
 // Simple:

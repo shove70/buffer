@@ -1,19 +1,19 @@
 {
-	"authors": [
-		"Shove"
-	],
-	"name": "buffer_example",
-	"targetType": "executable",
-	"license": "MIT License",
-	"copyright": "Copyright © 2017, Shove",
-	"targetName": "buffer_example",
-	"description": "a example for buffer.",
-	"dependencies" : {
-		"buffer": {
-			"path": "../../"
-		}
-	},
-	"stringImportPaths": [
-		"../"
-	]
+    "authors": [
+        "Shove"
+    ],
+    "name": "buffer_example",
+    "targetType": "executable",
+    "license": "MIT License",
+    "copyright": "Copyright © 2017, Shove",
+    "targetName": "buffer_example",
+    "description": "a example for buffer.",
+    "dependencies": {
+        "buffer": {
+            "path": "../../"
+        }
+    },
+    "stringImportPaths": [
+        "../"
+    ]
 }

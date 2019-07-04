@@ -18,11 +18,11 @@ import buffer.message;
 
 mixin (LoadBufferFile!"message.buffer");
 mixin (LoadBufferScript!`
-	message Sample {
-		string	name;
-		int32	age;
-		int16	sex;
-	}
+    message Sample {
+        string name;
+        int32  age;
+        int16  sex;
+    }
 `);
 
 // Simple:
@@ -55,7 +55,7 @@ void main()
     sample.sex = 1;
     ubyte[] buf = sample.serialize();
     writeln(buf);
-	
+
     string name;
     string method;
     Message.getMessageInfo(buf, name, method);

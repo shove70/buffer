@@ -100,7 +100,7 @@ struct Token
 Token[] lexer(string source)
 {
     /* State transition diagram:
-    0:	none      1: word      2: {      3: ;      4: }
+    0:  none      1: word      2: {      3: ;      4: }
     -1: /        -2: //       -3: /*
 
     0   -> \s[ \f\n\r\t\v]      0

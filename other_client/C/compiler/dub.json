@@ -1,16 +1,16 @@
 {
-	"authors": [
-		"Shove"
-	],
-	"name": "buffc",
-	"targetType": "executable",
-	"license": "MIT License",
-	"copyright": "Copyright © 2017, Shove",
-	"targetName": "buffc",
-	"description": "buffc compiler.",
-	"dependencies" : {
-		"buffer": {
-			"path": "../../../"
-		}
-	}
+    "authors": [
+        "Shove"
+    ],
+    "name": "buffc",
+    "targetType": "executable",
+    "license": "MIT License",
+    "copyright": "Copyright © 2017, Shove",
+    "targetName": "buffc",
+    "description": "buffc compiler.",
+    "dependencies": {
+        "buffer": {
+            "path": "../../../"
+        }
+    }
 }

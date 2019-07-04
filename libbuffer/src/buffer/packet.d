@@ -153,7 +153,7 @@ class Packet
         ubyte[] buffer;
         bb = new BufferBuilder(&buffer);
         bb.put!ushort(magic, false, false, 0);
-        bb.put!int(0, false, false, 0);		// length, seize a seat.
+        bb.put!int(0, false, false, 0);    // length, seize a seat.
         bb.put!string(name, false, true, 2);
         bb.put!string(method, false, true, 2);
         buffer ~= tlv;

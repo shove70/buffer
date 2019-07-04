@@ -1,15 +1,15 @@
 message RegisterInfo {
-	string  name;
-	string  password;
-	int8    age;
-	string  phone;
-	string  email;
+    string  name;
+    string  password;
+    int8    age;
+    string  phone;
+    string  email;
 }
 
 message LoginInfo {
-	string  name;
-	string  password;
-	int32   hallNo;
+    string  name;
+    string  password;
+    int32   hallNo;
 }
 
 /*

@@ -1,19 +1,19 @@
 {
-	"authors": [
-		"Shove"
-	],
-	"name": "rpc_client",
-	"targetType": "executable",
-	"license": "MIT License",
-	"copyright": "Copyright © 2017, Shove",
-	"targetName": "rpc_client",
-	"description": "a example for rpc client.",
-	"dependencies" : {
-		"buffer": {
-			"path": "../../"
-		}
-	},
-	"stringImportPaths": [
-		"../"
-	]
+    "authors": [
+        "Shove"
+    ],
+    "name": "rpc_client",
+    "targetType": "executable",
+    "license": "MIT License",
+    "copyright": "Copyright © 2017, Shove",
+    "targetName": "rpc_client",
+    "description": "a example for rpc client.",
+    "dependencies": {
+        "buffer": {
+            "path": "../../"
+        }
+    },
+    "stringImportPaths": [
+        "../"
+    ]
 }
