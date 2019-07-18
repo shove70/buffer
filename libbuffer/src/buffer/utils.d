@@ -43,7 +43,7 @@ string getClassSimpleName(string input)
     return input[pos < 0 ? 0 : pos + 1 .. $];
 }
 
-ubyte[] realToUByte(real value)
+ubyte[] realToUBytes(scope const real value)
 {
     ubyte[] buf = new ubyte[real.sizeof];
     ubyte* p = cast(ubyte*)&value;
@@ -57,7 +57,7 @@ ubyte[] realToUByte(real value)
     return buf;
 }
 
-real ubyteToReal(ubyte[] value)
+real ubytesToReal(scope const ubyte[] value)
 {
     real r;
     ubyte* p = cast(ubyte*)&r;

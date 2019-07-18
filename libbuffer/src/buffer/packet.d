@@ -1,5 +1,6 @@
 module buffer.packet;
 
+import std.meta : AliasSeq, staticIndexOf;
 import std.variant;
 import std.bitmanip;
 import std.traits;
@@ -13,6 +14,9 @@ import crypto.rsa;
 
 import buffer.utils;
 
+package:
+
+/// All encryption supported.
 enum CryptType
 {
     NONE            = 0,
@@ -22,41 +26,17 @@ enum CryptType
     RSA_XTEA_MIXIN  = 4
 }
 
-template TypeID(Type)
-{
-         static if (is(Unqual!Type == byte))
-        const ubyte TypeID = 0x01;
-    else static if (is(Unqual!Type == ubyte))
-        const ubyte TypeID = 0x02;
-    else static if (is(Unqual!Type == short))
-        const ubyte TypeID = 0x03;
-    else static if (is(Unqual!Type == ushort))
-        const ubyte TypeID = 0x04;
-    else static if (is(Unqual!Type == int))
-        const ubyte TypeID = 0x05;
-    else static if (is(Unqual!Type == uint))
-        const ubyte TypeID = 0x06;
-    else static if (is(Unqual!Type == long))
-        const ubyte TypeID = 0x07;
-    else static if (is(Unqual!Type == ulong))
-        const ubyte TypeID = 0x08;
-    else static if (is(Unqual!Type == float))
-        const ubyte TypeID = 0x20;
-    else static if (is(Unqual!Type == double))
-        const ubyte TypeID = 0x21;
-    else static if (is(Unqual!Type == real))
-        const ubyte TypeID = 0x22;
-    else static if (is(Unqual!Type == bool))
-        const ubyte TypeID = 0x30;
-    else static if (is(Unqual!Type == char))
-        const ubyte TypeID = 0x40;
-    else static if (is(Unqual!Type == string))
-        const ubyte TypeID = 0x41;
-    else
-        static assert(0, "Data types that are not supported: " ~ typeid(Type));
-}
+/// These two items must correspond one by one.
+alias supportedBuiltinTypes = AliasSeq!(     byte, ubyte, short, ushort, int,  uint, long, ulong, float, double, real, bool, char, string);
+immutable byte[] supportedBuiltinTypeNos = [ 0x01, 0x02,  0x03,  0x04,   0x05, 0x06, 0x07, 0x08,  0x20,  0x21,   0x22, 0x30, 0x40, 0x41 ];
 
-package:
+/// Convert Type to TypeNo.
+template TypeNo(T)
+{
+    enum idx = staticIndexOf!(T, supportedBuiltinTypes);
+    static assert(idx != -1, "Data types that are not supported: " ~ typeid(T));
+    enum TypeNo = supportedBuiltinTypeNos[idx];
+}
 
 class Packet
 {
@@ -71,66 +51,20 @@ class Packet
 
         foreach (v; params)
         {
-            if (v.type == typeid(byte))
+            bool typeValid;
+            static foreach (T; supportedBuiltinTypes)
             {
-                bb.put!byte(v.get!byte, true, false, 0);
+                if (v.type == typeid(T))
+                {
+                    typeValid = true;
+
+                    static if (is(T == string))
+                        bb.put!T(v.get!T, true, true, 4);
+                    else
+                        bb.put!T(v.get!T, true, false, 0);
+                }
             }
-            else if (v.type == typeid(ubyte))
-            {
-                bb.put!ubyte(v.get!ubyte, true, false, 0);
-            }
-            else if (v.type == typeid(short))
-            {
-                bb.put!short(v.get!short, true, false, 0);
-            }
-            else if (v.type == typeid(ushort))
-            {
-                bb.put!ushort(v.get!ushort, true, false, 0);
-            }
-            else if (v.type == typeid(int))
-            {
-                bb.put!int(v.get!int, true, false, 0);
-            }
-            else if (v.type == typeid(uint))
-            {
-                bb.put!uint(v.get!uint, true, false, 0);
-            }
-            else if (v.type == typeid(long))
-            {
-                bb.put!long(v.get!long, true, false, 0);
-            }
-            else if (v.type == typeid(ulong))
-            {
-                bb.put!ulong(v.get!ulong, true, false, 0);
-            }
-            else if (v.type == typeid(float))
-            {
-                bb.put!float(v.get!float, true, false, 0);
-            }
-            else if (v.type == typeid(double))
-            {
-                bb.put!double(v.get!double, true, false, 0);
-            }
-            else if (v.type == typeid(real))
-            {
-                bb.put!real(v.get!real, true, false, 0);
-            }
-            else if (v.type == typeid(bool))
-            {
-                bb.put!bool(v.get!bool, true, false, 0);
-            }
-            else if (v.type == typeid(char))
-            {
-                bb.put!char(v.get!char, true, false, 0);
-            }
-            else if (v.type == typeid(string))
-            {
-                bb.put!string(v.get!string, true, true, 4);
-            }
-            else
-            {
-                assert(0, "Data types id that are not supported: " ~ v.type.toString);
-            }
+            assert(typeValid, "Data types id that are not supported: " ~ v.type.toString);
         }
 
         final switch (crypt)
@@ -223,86 +157,43 @@ class Packet
             break;
         }
 
-        ubyte typeId;
+        ubyte typeNo;
         int pos;
         Variant[] ret;
 
-        void get(T)()
-        {
-            ret ~= Variant(buffer.peek!T(pos));
-            pos += T.sizeof;
-        }
-
         while (pos < buffer.length)
         {
-            typeId = buffer[pos];
+            typeNo = buffer[pos];
             pos++;
 
-            if (typeId == TypeID!byte)
+            bool typeValid;
+            static foreach (idx, T; supportedBuiltinTypes)
             {
-                get!byte;
+                if (typeNo == supportedBuiltinTypeNos[idx])
+                {
+                    typeValid = true;
+
+                    static if (is(T == real))
+                    {
+                        //get!real;
+                        ret ~= Variant(ubytesToReal(buffer[pos .. pos + real.sizeof]));
+                        pos += real.sizeof;
+                    }
+                    else static if (is(T == string))
+                    {
+                        immutable temp = buffer.peek!int(pos);
+                        pos += 4;
+                        ret ~= Variant(cast(string) buffer[pos .. pos + temp]);
+                        pos += temp;
+                    }
+                    else
+                    {
+                        ret ~= Variant(buffer.peek!T(pos));
+                        pos += T.sizeof;
+                    }
+                }
             }
-            else if (typeId == TypeID!ubyte)
-            {
-                get!ubyte;
-            }
-            else if (typeId == TypeID!short)
-            {
-                get!short;
-            }
-            else if (typeId == TypeID!ushort)
-            {
-                get!ushort;
-            }
-            else if (typeId == TypeID!int)
-            {
-                get!int;
-            }
-            else if (typeId == TypeID!uint)
-            {
-                get!uint;
-            }
-            else if (typeId == TypeID!long)
-            {
-                get!long;
-            }
-            else if (typeId == TypeID!ulong)
-            {
-                get!ulong;
-            }
-            else if (typeId == TypeID!float)
-            {
-                get!float;
-            }
-            else if (typeId == TypeID!double)
-            {
-                get!double;
-            }
-            else if (typeId == TypeID!real)
-            {
-                //get!real;
-                ret ~= Variant(ubyteToReal(buffer[pos .. pos + real.sizeof]));
-                pos += real.sizeof;
-            }
-            else if (typeId == TypeID!bool)
-            {
-                get!bool;
-            }
-            else if (typeId == TypeID!char)
-            {
-                get!char;
-            }
-            else if (typeId == TypeID!string)
-            {
-                int temp = buffer.peek!int(pos);
-                pos += 4;
-                ret ~= Variant(cast(string) buffer[pos .. pos + temp]);
-                pos += temp;
-            }
-            else
-            {
-                assert(0, "Data types id that are not supported: " ~ typeId.to!string);
-            }
+            assert(typeValid, "Data types id that are not supported: " ~ typeNo.to!string);
         }
 
         return ret;
@@ -331,7 +222,7 @@ class BufferBuilder
 
         if (isWriteTypeInfo)
         {
-            *buffer ~= TypeID!T;
+            *buffer ~= TypeNo!T;
         }
 
         static if (is(Unqual!T == string))
@@ -341,7 +232,7 @@ class BufferBuilder
         }
         else static if (is(Unqual!T == real))
         {
-            buf_data = realToUByte(value);
+            buf_data = realToUBytes(value);
             len = real.sizeof;
         }
         else

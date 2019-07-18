@@ -12,7 +12,7 @@ https://github.com/shove70/shove.c
 
 ### Quick Start:
 
-```
+```d
 import std.stdio;
 import buffer.message;
 
@@ -78,7 +78,7 @@ void main()
 
 ### RPC Client:
 
-```
+```d
 mixin(LoadBufferScript!`
     message LoginInfo {
         string name;
@@ -127,7 +127,7 @@ ubyte[] TcpRequestHandler(ubyte[] data)
 
 ### RPC Server:
 
-```
+```d
 class Business
 {
     mixin(LoadBufferScript!`

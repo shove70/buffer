@@ -1,5 +1,6 @@
 module buffer.rpc.server;
 
+import std.meta : staticIndexOf;
 import std.traits;
 import std.algorithm.searching;
 import std.conv : to;
@@ -29,20 +30,17 @@ class Server(Business)
 
         foreach (member; __traits(allMembers, Business))
         {
-            alias MemberFunctionsTuple!(Business, member) funcs;
+            alias funcs = MemberFunctionsTuple!(Business, member);
 
             static if (funcs.length > 0 && !canFind(builtinFunctions, member))
             {
                 static assert(funcs.length == 1, "The function of RPC call doesn't allow the overloads, function: " ~ member);
 
-                alias typeof(funcs[0]) func;
-                alias ParameterTypeTuple!func ParameterTypes;
-                alias ReturnType!func T;
+                alias func = typeof(funcs[0]);
+                alias ParameterTypes = ParameterTypeTuple!func;
+                alias T = ReturnType!func;
 
-                static assert((
-                        is(T == byte) || is(T == ubyte)  || is(T == short) || is(T == ushort) || is(T == int)  || is(T == uint)
-                     || is(T == long) || is(T == ulong)  || is(T == float) || is(T == double) || is(T == real) || is(T == bool)
-                     || is(T == char) || is(T == string) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message))),
+                static assert((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)),
                         "The function of RPC call return type is incorrect, function: " ~ member);
 
                 static if (Package != string.init)
