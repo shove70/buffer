@@ -14,8 +14,6 @@ import crypto.rsa;
 
 import buffer.utils;
 
-package:
-
 /// All encryption supported.
 enum CryptType
 {
@@ -25,6 +23,8 @@ enum CryptType
     RSA             = 3,
     RSA_XTEA_MIXIN  = 4
 }
+
+package:
 
 /// These two items must correspond one by one.
 alias supportedBuiltinTypes = AliasSeq!(     byte, ubyte, short, ushort, int,  uint, long, ulong, float, double, real, bool, char, string);
@@ -44,7 +44,7 @@ class Packet
     {
         assert(name.length <= 255, "Paramter name cannot be greater than 255 characters.");
         assert(method.length <= 255, "Paramter method cannot be greater than 255 characters.");
-        assert(params.length > 0, "Parameter params must be provided.");
+        //assert(params.length > 0, "Parameter params must be provided.");
 
         ubyte[] tlv;
         BufferBuilder bb = new BufferBuilder(&tlv);

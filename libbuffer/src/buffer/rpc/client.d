@@ -1,46 +1,60 @@
 module buffer.rpc.client;
 
+import core.stdc.errno;
 import std.meta : staticIndexOf;
 import std.traits;
 import std.conv : to;
 import std.variant;
+import std.socket;
+import std.bitmanip;
+import std.exception;
 
 import buffer.message;
 
-alias TcpRequestHandler = ubyte[] delegate(ubyte[] data);
-
+/// Rpc client
 class Client
 {
-    static TcpRequestHandler handler = null;
+    private __gshared string host;
+    private __gshared ushort port;
 
-    static void bindTcpRequestHandler(TcpRequestHandler handler)
+    static void setServerHost(const string host, const ushort port)
     {
-        Client.handler = handler;
+        Client.host = host;
+        Client.port = port;
     }
 
-    static T call(T, Params...)(string method, Params params)
+    /// Without Server host and port, need call setServerHost() at before call this.
+    static T call(T, Params...)(const string method, Params params)
     if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
-        assert(handler != null, "TcpRequestHandler must be bound.");
-        assert(method.length > 0, "Paramter method must be set.");
+        enforce((host != string.init), "Server host and port must be set.");
+        return callEx!(T, Params)(host, port, method, params);
+    }
 
-        ubyte[] response = handler(Message.serialize_without_msginfo(method, params));
+    /// With Server host and port, not need call setServerHost()
+    static T callEx(T, Params...)(const string host, const ushort port, const string method, Params params)
+    if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
+    {
+        enforce((host != string.init), "Server host and port must be set.");
+        enforce(method.length > 0, "Paramter method must be set.");
+
+        ubyte[] response = request(host, port, Message.serialize_without_msginfo(method, params));
         string name;
         string res_method;
         Variant[] res_params = Message.deserialize(response, name, res_method);
         
-        //assert(method == res_method);
+        //enforce(method == res_method);
 
         static if (isBuiltinType!T)
         {
-            assert(res_params.length == 1, "The number of response parameters from the server is incorrect.");
+            enforce(res_params.length == 1, "The number of response parameters from the server is incorrect.");
 
             return res_params[0].get!T;
         }
         else
         {
             alias FieldTypes = FieldTypeTuple!T;
-            static assert(FieldTypes.length == params.length, "Incorrect number of parameters, " ~ T.stringof ~ " requires " ~ FieldTypes.length.to!string ~ " parameters.");
+            enforce(FieldTypes.length == res_params.length, "Incorrect number of parameters, " ~ T.stringof ~ " requires " ~ FieldTypes.length.to!string ~ " parameters.");
 
             T message = new T();
 
@@ -53,5 +67,70 @@ class Client
 
             return message;
         }
+    }
+
+    private static ubyte[] request(const string host, const ushort port, const ubyte[] data)
+    {
+        TcpSocket socket = new TcpSocket();
+        socket.blocking = true;
+        socket.connect(new InternetAddress(host, port));
+
+        long len;
+        for (size_t off; off < data.length; off += len)
+        {
+            len = socket.send(data[off..$]);
+
+            if (len > 0)
+                continue;
+            else
+            {
+                socket.shutdown(SocketShutdown.BOTH);
+                socket.close();
+
+                if (len == 0)
+                    throw new Exception("Server socket close at sending. error: " ~ formatSocketError(errno));
+                else
+                    throw new Exception("Server socket error at sending. error: " ~ formatSocketError(errno));
+            }
+        }
+
+        ubyte[] receive(long length)
+        {
+            ubyte[] buf = new ubyte[length];
+            long len;
+            for (size_t off; off < buf.length; off += len)
+            {
+                len = socket.receive(buf[off..$]);
+
+                if (len > 0)
+                    continue;
+                else if (len == 0)
+                    return null;
+                else
+                    return null;
+            }
+
+            return buf;
+        }
+
+        len = cast(long)(ushort.sizeof + int.sizeof);
+        ubyte[] buffer = receive(len);
+
+        if (buffer.length != len)
+        {
+            socket.shutdown(SocketShutdown.BOTH);
+            socket.close();
+            throw new Exception("Server socket error at receiving. error: " ~ formatSocketError(errno));
+        }
+
+        len = buffer.peek!int(2);
+        ubyte[] buf = receive(len);
+        socket.shutdown(SocketShutdown.BOTH);
+        socket.close();
+
+        if (buf.length != len)
+            throw new Exception("Server socket error at receiving. error: " ~ formatSocketError(errno));
+
+        return buffer ~ buf;
     }
 }

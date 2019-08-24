@@ -6,7 +6,6 @@ import core.thread;
 import buffer;
 import buffer.rpc.server;
 
-
 class Business
 {
     mixin(LoadBufferScript!`

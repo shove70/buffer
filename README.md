@@ -94,34 +94,19 @@ mixin(LoadBufferScript!`
 void main()
 {
     Message.settings(1229, CryptType.XTEA, "1234");
-    Client.bindTcpRequestHandler(data => TcpRequestHandler(data));
+    Client.setServerHost("127.0.0.1", 10_000);
 
-    long userId = Client.call!long("GetUserId", "admin");
-    writeln(userId);
-
-    // or:
-
-    LoginRetInfo ret = Client.call!LoginRetInfo("Login", "admin", "123456");
+    LoginRetInfo ret = Client.call!LoginRetInfo("login", "admin", "123456");
     if (ret !is null)
     {
         writeln(ret.id);
         writeln(ret.name);
     }
-}
 
-ubyte[] TcpRequestHandler(ubyte[] data)
-{
-    TcpSocket socket = new TcpSocket();
-    socket.blocking = true;
-    socket.bind(new InternetAddress("127.0.0.1", 0));
-    socket.connect(new InternetAddress("127.0.0.1", 10000));
-    socket.send(data);
+    // or:
 
-    ubyte[] rec_data = new ubyte[1024];
-    long len = socket.receive(rec_data);
-    socket.close();
-
-    return rec_data[0..len];
+    long userId = Client.call!long("getUserId", "admin");
+    writeln(userId);
 }
 ```
 
