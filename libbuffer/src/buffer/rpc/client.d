@@ -8,6 +8,9 @@ import std.variant;
 import std.socket;
 import std.bitmanip;
 import std.exception;
+import std.typecons;
+
+import crypto.rsa;
 
 import buffer.message;
 
@@ -23,25 +26,33 @@ class Client
         Client.port = port;
     }
 
-    /// Without Server host and port, need call setServerHost() at before call this.
+    /++
+        Use global magic, host, port and other information. need call settings(), setServerHost() at before call this.
+        When clients do not need to connect to different servers, using it can simplify calls.
+    +/
     static T call(T, Params...)(const string method, Params params)
     if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
         enforce((host != string.init), "Server host and port must be set.");
-        return callEx!(T, Params)(host, port, method, params);
+        return callEx!(T, Params)(host, port, Message._magic, Message._crypt, Message._key, Message._rsaKey, method, params);
     }
 
-    /// With Server host and port, not need call setServerHost()
-    static T callEx(T, Params...)(const string host, const ushort port, const string method, Params params)
+    /++
+        With Server host, port, magic, cryptType, key parameters, not need call setServerHost(), settings().
+        When the same client needs to connect to different servers, it needs to be used.
+    +/
+    static T callEx(T, Params...)(const string host, const ushort port,
+        const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
+        const string method, Params params)
     if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
         enforce((host != string.init), "Server host and port must be set.");
         enforce(method.length > 0, "Paramter method must be set.");
 
-        ubyte[] response = request(host, port, Message.serialize_without_msginfo(method, params));
+        ubyte[] response = request(host, port, Message.serialize_without_msginfo(magic, crypt, key, rsaKey, method, params));
         string name;
         string res_method;
-        Variant[] res_params = Message.deserialize(response, name, res_method);
+        Variant[] res_params = Message.deserializeEx(magic, crypt, key, rsaKey, response, name, res_method);
         
         //enforce(method == res_method);
 

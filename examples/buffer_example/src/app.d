@@ -51,15 +51,15 @@ void main_()
 
     switch (name)
     {
-    case "Sample":
-        Sample sam = Message.deserialize!Sample(buf);
-        writeln("name:\t",  sam.name);
-        writeln("age:\t",   sam.age);
-        writeln("sex:\t",   sam.sex);
-        break;
-    case "...":
-        break;
-    default:
-        break;
+        case "Sample":
+            Sample sam = Message.deserialize!Sample(buf);
+            writeln("name:\t",  sam.name);
+            writeln("age:\t",   sam.age);
+            writeln("sex:\t",   sam.sex);
+            break;
+        case "...":
+            break;
+        default:
+            break;
     }
 }

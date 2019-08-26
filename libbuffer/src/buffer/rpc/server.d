@@ -18,7 +18,7 @@ class Server(Business)
         business = new Business();
     }
 
-    ubyte[] Handler(string Package = string.init, Stuff...)(ubyte[] data, Stuff stuff)
+    ubyte[] Handler(string Package = string.init, Stuff...)(const ubyte[] data, Stuff stuff)
     {
         string name;
         string method;

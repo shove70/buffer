@@ -33,7 +33,7 @@ public:
     //string
 
     ///
-    static void settings(ushort magic, CryptType crypt = CryptType.NONE, string key = string.init)
+    static void settings(const ushort magic, const CryptType crypt = CryptType.NONE, const string key = string.init)
     {
         assert((crypt == CryptType.NONE) || (crypt != CryptType.NONE && key != string.init),
                 "Must specify key when specifying the type of CryptType.");
@@ -51,7 +51,7 @@ public:
     }
 
     ///
-    static void settings(ushort magic, RSAKeyInfo rsaKey, bool mixinXteaMode = false)
+    static void settings(const ushort magic, RSAKeyInfo rsaKey, const bool mixinXteaMode = false)
     {
         _magic = magic;
         _crypt = mixinXteaMode ? CryptType.RSA_XTEA_MIXIN : CryptType.RSA;
@@ -59,7 +59,14 @@ public:
     }
 
     ///
-    static ubyte[] serialize_without_msginfo(Params...)(string method, Params params)
+    static ubyte[] serialize_without_msginfo(Params...)(const string method, Params params)
+    {
+        return serialize_without_msginfo!(Params)(_magic, _crypt, _key, _rsaKey, method, params);
+    }
+
+    ///
+    static ubyte[] serialize_without_msginfo(Params...)(const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
+        string method, Params params)
     {
         Variant[] t_params;
 
@@ -68,22 +75,29 @@ public:
             t_params ~= Variant(p);
         }
 
-        return Packet.build(_magic, _crypt, _key, _rsaKey, string.init, method, t_params);
+        return Packet.build(magic, crypt, key, rsaKey, string.init, method, t_params);
     }
 
-    static void getMessageInfo(ubyte[] buffer, out string name, out string method)
+    static void getMessageInfo(const ubyte[] buffer, out string name, out string method)
     {
         Packet.parseInfo(buffer, name, method);
     }
 
     ///
-    static Variant[] deserialize(ubyte[] buffer, out string name, out string method)
+    static Variant[] deserialize(const ubyte[] buffer, out string name, out string method)
     {
-        return Packet.parse(buffer, _magic, _crypt, _key, _rsaKey, name, method);
+        return deserializeEx(_magic, _crypt, _key, _rsaKey, buffer, name, method);
     }
 
     ///
-    static T deserialize(T)(ubyte[] buffer)
+    static Variant[] deserializeEx(const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
+        const ubyte[] buffer, out string name, out string method)
+    {
+        return Packet.parse(buffer, magic, crypt, key, rsaKey, name, method);
+    }
+
+    ///
+    static T deserialize(T)(const ubyte[] buffer)
     if ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message))
     {
         string method;
@@ -92,7 +106,7 @@ public:
     }
 
     ///
-    static T deserialize(T)(ubyte[] buffer, out string method)
+    static T deserialize(T)(const ubyte[] buffer, out string method)
     if ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message))
     {
         string name;
@@ -109,7 +123,7 @@ public:
             assert(0, "The type T(" ~ T.classinfo.name ~ ") of the incoming template is incorrect. It should be " ~ name);
         }
 
-        foreach (i, type; FieldTypeTuple!(T))
+        static foreach (i, type; FieldTypeTuple!(T))
         {
             mixin(`
                 message.` ~ FieldNameTuple!T[i] ~ ` = params[` ~ i.to!string ~ `].get!` ~ type.stringof ~ `;
@@ -121,14 +135,14 @@ public:
 
 protected:
 
-    ubyte[] serialize(T)(T message, string method = string.init)
+    ubyte[] serialize(T)(const T message, const string method = string.init)
     if ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message))
     {
         assert(message !is null, "The object to serialize cannot be null.");
 
         Variant[] params;
 
-        foreach (i, type; FieldTypeTuple!T)
+        static foreach (i, type; FieldTypeTuple!T)
         {
             mixin(`
                 params ~= Variant(message.` ~ FieldNameTuple!T[i] ~ `);
@@ -138,7 +152,7 @@ protected:
         return Packet.build(_magic, _crypt, _key, _rsaKey, getClassSimpleName(T.classinfo.name), method, params);
     }
 
-private:
+package:
 
     __gshared ushort              _magic;
     __gshared CryptType           _crypt;

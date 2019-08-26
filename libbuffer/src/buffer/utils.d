@@ -13,7 +13,7 @@ string MD5(scope const(void[])[] src...)
     return toHexString(hash).toUpper();
 }
 
-ubyte[] strToByte_hex(string input)
+ubyte[] strToByte_hex(const string input)
 {
     Appender!(ubyte[]) app;
 
@@ -25,7 +25,7 @@ ubyte[] strToByte_hex(string input)
     return app.data;
 }
 
-string byteToStr_hex(T = byte)(T[] buffer)
+string byteToStr_hex(T = byte)(const T[] buffer)
 {
     Appender!string app;
 
@@ -36,7 +36,7 @@ string byteToStr_hex(T = byte)(T[] buffer)
     return app.data;
 }
 
-string getClassSimpleName(string input)
+string getClassSimpleName(const string input)
 {
     int pos = cast(int)lastIndexOf(input, '.');
 

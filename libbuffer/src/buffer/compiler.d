@@ -8,19 +8,19 @@ import std.algorithm.searching;
 import std.uni;
 import std.exception;
 
-template LoadBufferFile(string fileName)
+template LoadBufferFile(const string fileName)
 {
     pragma(msg, "Compiling file: ", fileName, "...");
     const char[] LoadBufferFile = compiler!(import(fileName));
 }
 
-template LoadBufferScript(string src)
+template LoadBufferScript(const string src)
 {
     pragma(msg, "Compiling script: ", extractScriptfragment(src), "...");
     const char[] LoadBufferScript = compiler!src;
 }
 
-private string compiler(string source)()
+private string compiler(const string source)()
 {
     Token[] tokens = lexer(source);
     Sentence[] sentences = parser(tokens);
@@ -39,7 +39,7 @@ private string compiler(string source)()
         }
 
         code.put("\r\n");
-        code.put("\tubyte[] serialize(string method = string.init)\r\n");
+        code.put("\tubyte[] serialize(const string method = string.init)\r\n");
         code.put("\t{\r\n");
         code.put("\t\treturn super.serialize!(typeof(this))(this, method);\r\n");
         code.put("\t}\r\n");
@@ -72,7 +72,7 @@ struct Token
     TokenType type;
     string name;
 
-    this(string name)
+    this(const string name)
     {
         if (name == "message")
         {
@@ -90,14 +90,14 @@ struct Token
         this.name = name;
     }
 
-    this(TokenType type, string name)
+    this(const TokenType type, const string name)
     {
         this.type = type;
         this.name = name;
     }
 }
 
-Token[] lexer(string source)
+Token[] lexer(const string source)
 {
     /* State transition diagram:
     0:  none      1: word      2: {      3: ;      4: }
@@ -135,124 +135,124 @@ Token[] lexer(string source)
     char last;
     string token = string.init;
 
-    source ~= "\r\n";
-    foreach (i, ch; source)
+    const string src = (cast(string) source ~ "\r\n");
+    foreach (i, ch; src)
     {
         switch (state)
         {
-        case 0:
-            if (isWhite(ch))
-                continue;
-            else if (isIdentifierFirstChar(ch))
-            {
-                token = ch.to!string;
-                state = 1;
-            }
-            else if (ch == '{')
-            {
-                tokens ~= Token(TokenType.DelimiterOpen, "{");
-                state = 0;
-            }
-            else if (ch == ';')
-            {
-                tokens ~= Token(TokenType.SentenceEnd, ";");
-                state = 0;
-            }
-            else if (ch == '}')
-            {
-                tokens ~= Token(TokenType.DelimiterClose, "}");
-                state = 0;
-            }
-            else if (ch == '/')
-            {
-                stateHang = state;
-                state = -1;
-            }
-            else
-            {
-                enforce(0, "Invalid character: " ~ ch.to!string);
-            }
-            break;
-        case 1:
-            if (isWhite(ch))
-            {
-                tokens ~= Token(token);
-                token = string.init;
-                state = 0;
-            }
-            else if (isIdentifierChar(ch))
-            {
-                token ~= ch.to!string;
-            }
-            else if (ch == '{')
-            {
-                tokens ~= Token(token);
-                tokens ~= Token(TokenType.DelimiterOpen, "{");
-                token = string.init;
-                state = 0;
-            }
-            else if (ch == ';')
-            {
-                tokens ~= Token(token);
-                tokens ~= Token(TokenType.SentenceEnd, ";");
-                token = string.init;
-                state = 0;
-            }
-            else if (ch == '}')
-            {
-                tokens ~= Token(token);
-                tokens ~= Token(TokenType.DelimiterClose, "}");
-                token = string.init;
-                state = 0;
-            }
-            else if (ch == '/')
-            {
-                stateHang = state;
-                state = -1;
-            }
-            else
-            {
-                enforce(0, "Invalid character: " ~ ch.to!string);
-            }
-            break;
-        case -1:
-            if (ch == '/')
-            {
-                state = -2;
-            }
-            else if (ch == '*')
-            {
-                state = -3;
-            }
-            else
-            {
-                enforce(0, "Invalid character: " ~ ch.to!string);
-            }
-            break;
-        case -2:
-            if (ch == '\n')
-            {
-                state = stateHang;
-                stateHang = 0;
-            }
-            else
-            {
-                continue;
-            }
-            break;
-        case -3:
-            if ((ch == '/') && (last == '*'))
-            {
-                state = stateHang;
-                stateHang = 0;
-            }
-            else
-            {
-                continue;
-            }
-            break;
-        default:
-            break;
+            case 0:
+                if (isWhite(ch))
+                    continue;
+                else if (isIdentifierFirstChar(ch))
+                {
+                    token = ch.to!string;
+                    state = 1;
+                }
+                else if (ch == '{')
+                {
+                    tokens ~= Token(TokenType.DelimiterOpen, "{");
+                    state = 0;
+                }
+                else if (ch == ';')
+                {
+                    tokens ~= Token(TokenType.SentenceEnd, ";");
+                    state = 0;
+                }
+                else if (ch == '}')
+                {
+                    tokens ~= Token(TokenType.DelimiterClose, "}");
+                    state = 0;
+                }
+                else if (ch == '/')
+                {
+                    stateHang = state;
+                    state = -1;
+                }
+                else
+                {
+                    enforce(0, "Invalid character: " ~ ch.to!string);
+                }
+                break;
+            case 1:
+                if (isWhite(ch))
+                {
+                    tokens ~= Token(token);
+                    token = string.init;
+                    state = 0;
+                }
+                else if (isIdentifierChar(ch))
+                {
+                    token ~= ch.to!string;
+                }
+                else if (ch == '{')
+                {
+                    tokens ~= Token(token);
+                    tokens ~= Token(TokenType.DelimiterOpen, "{");
+                    token = string.init;
+                    state = 0;
+                }
+                else if (ch == ';')
+                {
+                    tokens ~= Token(token);
+                    tokens ~= Token(TokenType.SentenceEnd, ";");
+                    token = string.init;
+                    state = 0;
+                }
+                else if (ch == '}')
+                {
+                    tokens ~= Token(token);
+                    tokens ~= Token(TokenType.DelimiterClose, "}");
+                    token = string.init;
+                    state = 0;
+                }
+                else if (ch == '/')
+                {
+                    stateHang = state;
+                    state = -1;
+                }
+                else
+                {
+                    enforce(0, "Invalid character: " ~ ch.to!string);
+                }
+                break;
+            case -1:
+                if (ch == '/')
+                {
+                    state = -2;
+                }
+                else if (ch == '*')
+                {
+                    state = -3;
+                }
+                else
+                {
+                    enforce(0, "Invalid character: " ~ ch.to!string);
+                }
+                break;
+            case -2:
+                if (ch == '\n')
+                {
+                    state = stateHang;
+                    stateHang = 0;
+                }
+                else
+                {
+                    continue;
+                }
+                break;
+            case -3:
+                if ((ch == '/') && (last == '*'))
+                {
+                    state = stateHang;
+                    stateHang = 0;
+                }
+                else
+                {
+                    continue;
+                }
+                break;
+            default:
+                break;
         }
 
         last = ch;
@@ -261,17 +261,17 @@ Token[] lexer(string source)
     return tokens;
 }
 
-private bool isIdentifierFirstChar(char ch)
+private bool isIdentifierFirstChar(const char ch)
 {
     return isAlpha(ch) || ch == '_';
 }
 
-private bool isIdentifierChar(char ch)
+private bool isIdentifierChar(const char ch)
 {
     return isAlphaNum(ch) || ch == '_';
 }
 
-private string extractScriptfragment(string source)
+private string extractScriptfragment(const string source)
 {
     string ret = string.init;
 
@@ -302,7 +302,7 @@ struct Sentence
     Field[] fields;
 }
 
-Sentence[] parser(Token[] tokens)
+Sentence[] parser(const Token[] tokens)
 {
     Sentence[] sentences;
     int pos;
@@ -319,7 +319,7 @@ Sentence[] parser(Token[] tokens)
     return sentences;
 }
 
-private Sentence parser_define(Token[] tokens, ref int pos)
+private Sentence parser_define(const Token[] tokens, ref int pos)
 {
     if ((cast(int)tokens.length - pos < 4) || (tokens[pos].type != TokenType.Define) || (tokens[pos + 1].type != TokenType.Identifier) || (tokens[pos + 2].type != TokenType.DelimiterOpen))
     {
@@ -343,7 +343,7 @@ private Sentence parser_define(Token[] tokens, ref int pos)
     return sentence;
 }
 
-private Nullable!Field parser_field(Token[] tokens, ref int pos)
+private Nullable!Field parser_field(const Token[] tokens, ref int pos)
 {
     if ((cast(int)tokens.length - pos >= 1) && (tokens[pos].type == TokenType.DelimiterClose))
     {
@@ -375,7 +375,7 @@ final static class Sample : Message
     int32 age;
     int16 sex;
 
-    ubyte[] serialize(string method = string.init)
+    ubyte[] serialize(const string method = string.init)
     {
         return super.serialize!(typeof(this))(this, method);
     }

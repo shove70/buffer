@@ -38,13 +38,15 @@ template TypeNo(T)
     enum TypeNo = supportedBuiltinTypeNos[idx];
 }
 
+alias write = std.bitmanip.write;
+
 class Packet
 {
-    static ubyte[] build(ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, string name, string method, Variant[] params)
+    static ubyte[] build(const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
+        const string name, const string method, Variant[] params)
     {
         assert(name.length <= 255, "Paramter name cannot be greater than 255 characters.");
         assert(method.length <= 255, "Paramter method cannot be greater than 255 characters.");
-        //assert(params.length > 0, "Parameter params must be provided.");
 
         ubyte[] tlv;
         BufferBuilder bb = new BufferBuilder(&tlv);
@@ -56,32 +58,64 @@ class Packet
             {
                 if (v.type == typeid(T))
                 {
-                    typeValid = true;
-
                     static if (is(T == string))
                         bb.put!T(v.get!T, true, true, 4);
                     else
                         bb.put!T(v.get!T, true, false, 0);
+                    typeValid = true;
+                }
+                else if (v.type == typeid(ConstOf!T))
+                {
+                    static if (is(Unique!T == string))
+                        bb.put!T(v.get!(const T), true, true, 4);
+                    else
+                        bb.put!T(v.get!(const T), true, false, 0);
+                    typeValid = true;
+                }
+                else if (v.type == typeid(SharedOf!T))
+                {
+                    static if (is(Unique!T == string))
+                        bb.put!T(v.get!(shared T), true, true, 4);
+                    else
+                        bb.put!T(v.get!(shared T), true, false, 0);
+                    typeValid = true;
+                }
+                else if (v.type == typeid(SharedConstOf!T))
+                {
+                    static if (is(Unique!T == string))
+                        bb.put!T(v.get!(shared const T), true, true, 4);
+                    else
+                        bb.put!T(v.get!(shared const T), true, false, 0);
+                    typeValid = true;
+                }
+                else if (v.type == typeid(ImmutableOf!T))
+                {
+                    static if (is(Unique!T == string))
+                        bb.put!T(v.get!(immutable T), true, true, 4);
+                    else
+                        bb.put!T(v.get!(immutable T), true, false, 0);
+                    typeValid = true;
                 }
             }
+
             assert(typeValid, "Data types id that are not supported: " ~ v.type.toString);
         }
 
         final switch (crypt)
         {
-        case CryptType.NONE:
-            break;
-        case CryptType.XTEA:
-            tlv = Xtea.encrypt(tlv, key, 64, PaddingMode.PKCS5);
-            break;
-        case CryptType.AES:
-            tlv = AESUtils.encrypt!AES128(tlv, key, iv, PaddingMode.PKCS5);
-            break;
-        case CryptType.RSA:
-            tlv = RSA.encrypt(rsaKey, tlv);
-            break;
-        case CryptType.RSA_XTEA_MIXIN:
-            tlv = RSA.encrypt(rsaKey, tlv, true);
+            case CryptType.NONE:
+                break;
+            case CryptType.XTEA:
+                tlv = Xtea.encrypt(tlv, key, 64, PaddingMode.PKCS5);
+                break;
+            case CryptType.AES:
+                tlv = AESUtils.encrypt!AES128(tlv, key, iv, PaddingMode.PKCS5);
+                break;
+            case CryptType.RSA:
+                tlv = RSA.encrypt(rsaKey, tlv);
+                break;
+            case CryptType.RSA_XTEA_MIXIN:
+                tlv = RSA.encrypt(rsaKey, tlv, true);
         }
 
         ubyte[] buffer;
@@ -97,7 +131,7 @@ class Packet
         return buffer;
     }
 
-    static size_t parseInfo(ubyte[] buffer, out string name, out string method)
+    static size_t parseInfo(const ubyte[] buffer, out string name, out string method)
     {
         enforce(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
@@ -116,7 +150,7 @@ class Packet
         return 10 + len1 + len2;
     }
 
-    static Variant[] parse(ubyte[] buffer, ushort magic, CryptType crypt, string key, Nullable!RSAKeyInfo rsaKey, out string name, out string method)
+    static Variant[] parse(const ubyte[] buffer, const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey, out string name, out string method)
     {
         enforce(buffer != null && buffer.length >= 10, "Incorrect buffer length.");
 
@@ -130,40 +164,40 @@ class Packet
             return null;
         }
 
-        buffer = buffer[0 .. t_len + 6];
-        if (strToByte_hex(MD5(buffer[0 .. $ - 2])[0 .. 4]) != buffer[$ - 2 .. $])
+        ubyte[] buf = cast(ubyte[]) buffer[0 .. t_len + 6];
+        if (strToByte_hex(MD5(buf[0 .. $ - 2])[0 .. 4]) != buf[$ - 2 .. $])
         {
             return null;
         }
 
-        size_t tlv_pos = parseInfo(buffer, name, method);
-        buffer = buffer[tlv_pos .. $ - 2];
+        size_t tlv_pos = parseInfo(buf, name, method);
+        buf = buf[tlv_pos .. $ - 2];
 
         final switch (crypt)
         {
-        case CryptType.NONE:
-            break;
-        case CryptType.XTEA:
-            buffer = Xtea.decrypt(buffer, key, 64, PaddingMode.PKCS5);
-            break;
-        case CryptType.AES:
-            buffer = AESUtils.decrypt!AES128(buffer, key, iv, PaddingMode.PKCS5);
-            break;
-        case CryptType.RSA:
-            buffer = RSA.decrypt(rsaKey, buffer);
-            break;
-        case CryptType.RSA_XTEA_MIXIN:
-            buffer = RSA.decrypt(rsaKey, buffer, true);
-            break;
+            case CryptType.NONE:
+                break;
+            case CryptType.XTEA:
+                buf = Xtea.decrypt(buf, key, 64, PaddingMode.PKCS5);
+                break;
+            case CryptType.AES:
+                buf = AESUtils.decrypt!AES128(buf, key, iv, PaddingMode.PKCS5);
+                break;
+            case CryptType.RSA:
+                buf = RSA.decrypt(rsaKey, buf);
+                break;
+            case CryptType.RSA_XTEA_MIXIN:
+                buf = RSA.decrypt(rsaKey, buf, true);
+                break;
         }
 
         ubyte typeNo;
         int pos;
         Variant[] ret;
 
-        while (pos < buffer.length)
+        while (pos < buf.length)
         {
-            typeNo = buffer[pos];
+            typeNo = buf[pos];
             pos++;
 
             bool typeValid;
@@ -176,19 +210,19 @@ class Packet
                     static if (is(T == real))
                     {
                         //get!real;
-                        ret ~= Variant(ubytesToReal(buffer[pos .. pos + real.sizeof]));
+                        ret ~= Variant(ubytesToReal(buf[pos .. pos + real.sizeof]));
                         pos += real.sizeof;
                     }
                     else static if (is(T == string))
                     {
-                        immutable temp = buffer.peek!int(pos);
+                        immutable temp = buf.peek!int(pos);
                         pos += 4;
-                        ret ~= Variant(cast(string) buffer[pos .. pos + temp]);
+                        ret ~= Variant(cast(string) buf[pos .. pos + temp]);
                         pos += temp;
                     }
                     else
                     {
-                        ret ~= Variant(buffer.peek!T(pos));
+                        ret ~= Variant(buf.peek!T(pos));
                         pos += T.sizeof;
                     }
                 }
@@ -213,7 +247,7 @@ class BufferBuilder
         this.buffer = buffer;
     }
 
-    size_t put(T)(T value, bool isWriteTypeInfo, bool isWriteLengthInfo, int lengthBytes)
+    size_t put(T)(const T value, const bool isWriteTypeInfo, const bool isWriteLengthInfo, const int lengthBytes)
     {
         assert(lengthBytes == 0 || lengthBytes == 2 || lengthBytes == 4);
 
