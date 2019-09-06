@@ -112,10 +112,10 @@ class Packet
                 tlv = AESUtils.encrypt!AES128(tlv, key, iv, PaddingMode.PKCS5);
                 break;
             case CryptType.RSA:
-                tlv = RSA.encrypt(rsaKey, tlv);
+                tlv = RSA.encrypt(rsaKey.get, tlv);
                 break;
             case CryptType.RSA_XTEA_MIXIN:
-                tlv = RSA.encrypt(rsaKey, tlv, true);
+                tlv = RSA.encrypt(rsaKey.get, tlv, true);
         }
 
         ubyte[] buffer;
@@ -184,10 +184,10 @@ class Packet
                 buf = AESUtils.decrypt!AES128(buf, key, iv, PaddingMode.PKCS5);
                 break;
             case CryptType.RSA:
-                buf = RSA.decrypt(rsaKey, buf);
+                buf = RSA.decrypt(rsaKey.get, buf);
                 break;
             case CryptType.RSA_XTEA_MIXIN:
-                buf = RSA.decrypt(rsaKey, buf, true);
+                buf = RSA.decrypt(rsaKey.get, buf, true);
                 break;
         }
 
