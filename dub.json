@@ -2,7 +2,7 @@
     "authors": ["Shove"],
     "name": "buffer",
     "description": "A protocol buffer & RPC library",
-    "license": "MIT License",
+    "license": "MIT",
     "copyright": "Copyright © 2018, Shove",
     "targetType": "library",
     "targetName": "buffer",
@@ -13,6 +13,6 @@
         "libbuffer/src"
     ],
     "dependencies": {
-        "crypto": "~>0.2.10"
+        "crypto": "~>0.2.11"
     }
 }

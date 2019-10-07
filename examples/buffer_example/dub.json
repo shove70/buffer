@@ -4,7 +4,7 @@
     ],
     "name": "buffer_example",
     "targetType": "executable",
-    "license": "MIT License",
+    "license": "MIT",
     "copyright": "Copyright © 2017, Shove",
     "targetName": "buffer_example",
     "description": "a example for buffer.",

@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/shove70/buffer.svg?branch=master)](https://travis-ci.org/shove70/buffer)
 [![GitHub tag](https://img.shields.io/github/tag/shove70/buffer.svg?maxAge=86400)](https://github.com/shove70/buffer/releases)
+[![Dub downloads](https://img.shields.io/dub/dt/buffer.svg)](http://code.dlang.org/packages/buffer)
 
 # A simple and practical protocol buffer & RPC library.
 

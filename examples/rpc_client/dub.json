@@ -4,7 +4,7 @@
     ],
     "name": "rpc_client",
     "targetType": "executable",
-    "license": "MIT License",
+    "license": "MIT",
     "copyright": "Copyright © 2017, Shove",
     "targetName": "rpc_client",
     "description": "a example for rpc client.",
