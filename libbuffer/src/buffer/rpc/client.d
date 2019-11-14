@@ -145,7 +145,7 @@ class Client
 
         ubyte[] receive(long length)
         {
-            ubyte[] buf = new ubyte[length];
+            ubyte[] buf = new ubyte[cast(uint)length];
             long len;
 
             for (size_t off; off < buf.length; off += len)
