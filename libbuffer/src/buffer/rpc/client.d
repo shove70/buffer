@@ -9,6 +9,7 @@ import std.socket;
 import std.bitmanip;
 import std.exception;
 import std.typecons;
+import std.datetime;
 
 import crypto.rsa;
 
@@ -50,6 +51,8 @@ class Client
         enforce(method.length > 0, "Paramter method must be set.");
 
         TcpSocket socket = new TcpSocket();
+        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, 60.seconds);
+        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, 60.seconds);
         socket.blocking = true;
         socket.connect(new InternetAddress(host, port));
 
