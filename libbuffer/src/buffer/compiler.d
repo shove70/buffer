@@ -142,7 +142,9 @@ Token[] lexer(const string source)
         {
             case 0:
                 if (isWhite(ch))
+                {
                     continue;
+                }
                 else if (isIdentifierFirstChar(ch))
                 {
                     token = ch.to!string;
@@ -235,20 +237,12 @@ Token[] lexer(const string source)
                     state = stateHang;
                     stateHang = 0;
                 }
-                else
-                {
-                    continue;
-                }
                 break;
             case -3:
                 if ((ch == '/') && (last == '*'))
                 {
                     state = stateHang;
                     stateHang = 0;
-                }
-                else
-                {
-                    continue;
                 }
                 break;
             default:
