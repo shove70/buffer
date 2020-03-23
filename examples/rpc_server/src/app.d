@@ -54,7 +54,6 @@ void main()
     server = new Server!(Business)();
 
     TcpSocket socket = new TcpSocket();
-    socket.blocking = true;
     socket.bind(new InternetAddress("127.0.0.1", 10000));
     socket.listen(10);
 

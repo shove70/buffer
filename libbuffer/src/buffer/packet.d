@@ -217,7 +217,7 @@ class Packet
                     {
                         immutable temp = buf.peek!int(pos);
                         pos += 4;
-                        ret ~= Variant(cast(string) buf[pos .. pos + temp]);
+                        ret ~= Variant(cast(string) buf[pos .. pos + temp]);    // !! May be: invalid UTF-8 sequence.
                         pos += temp;
                     }
                     else

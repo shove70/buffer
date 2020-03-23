@@ -51,9 +51,8 @@ class Client
         enforce(method.length > 0, "Paramter method must be set.");
 
         TcpSocket socket = new TcpSocket();
-        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, 60.seconds);
-        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, 60.seconds);
-        socket.blocking = true;
+        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, 30.seconds);
+        socket.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, 30.seconds);
         socket.connect(new InternetAddress(host, port));
 
         T result = callEx!(T, Params)(socket, magic, crypt, key, rsaKey, method, params);
@@ -133,7 +132,7 @@ class Client
             }
             else
             {
-                if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
+                if (errno == EINTR) // || errno == EAGAIN || errno == EWOULDBLOCK)
                 {
                     len = 0;
                     continue;
@@ -165,7 +164,7 @@ class Client
                 }
                 else
                 {
-                    if (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)
+                    if (errno == EINTR) // || errno == EAGAIN || errno == EWOULDBLOCK)
                     {
                         len = 0;
                         continue;
