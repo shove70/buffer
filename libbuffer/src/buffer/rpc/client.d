@@ -32,10 +32,18 @@ class Client
         When clients do not need to connect to different servers, using it can simplify calls.
     +/
     static T call(T, Params...)(const string method, Params params)
-    if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
+    if (is(T == void) || (staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
         enforce(host != string.init, "Server host and port must be set.");
-        return callEx!(T, Params)(host, port, Message._magic, Message._crypt, Message._key, Message._rsaKey, method, params);
+
+        static if (is(T == void))
+        {
+            callEx!(T, Params)(host, port, Message._magic, Message._crypt, Message._key, Message._rsaKey, method, params);
+        }
+        else
+        {
+            return callEx!(T, Params)(host, port, Message._magic, Message._crypt, Message._key, Message._rsaKey, method, params);
+        }
     }
 
     /++
@@ -45,7 +53,7 @@ class Client
     static T callEx(T, Params...)(const string host, const ushort port,
         const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
         const string method, Params params)
-    if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
+    if (is(T == void) || (staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
         enforce(host != string.init, "Server host and port must be set.");
         enforce(method.length > 0, "Paramter method must be set.");
@@ -55,12 +63,22 @@ class Client
         socket.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, 30.seconds);
         socket.connect(new InternetAddress(host, port));
 
-        T result = callEx!(T, Params)(socket, magic, crypt, key, rsaKey, method, params);
+        static if (is(T == void))
+        {
+            callEx!(T, Params)(socket, magic, crypt, key, rsaKey, method, params);
+        }
+        else
+        {
+            T result = callEx!(T, Params)(socket, magic, crypt, key, rsaKey, method, params);
+        }
 
         socket.shutdown(SocketShutdown.BOTH);
         socket.close();
 
-        return result;
+        static if (!is(T == void))
+        {
+            return result;
+        }
     }
 
     /++
@@ -71,39 +89,47 @@ class Client
     static T callEx(T, Params...)(Socket socket,
         const ushort magic, const CryptType crypt, const string key, Nullable!RSAKeyInfo rsaKey,
         const string method, Params params)
-    if ((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
+    if (is(T == void) || (staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)))
     {
         enforce(socket.isAlive, "The socket is not connected to the server.");
         enforce(method.length > 0, "Paramter method must be set.");
 
-        ubyte[] response = request(socket, Message.serialize_without_msginfo(magic, crypt, key, rsaKey, method, params));
-        string name;
-        string res_method;
-        Variant[] res_params = Message.deserializeEx(magic, crypt, key, rsaKey, response, name, res_method);
-        
-        //enforce(method == res_method);
-
-        static if (isBuiltinType!T)
+        static if (is(T == void))
         {
-            enforce(res_params.length == 1, "The number of response parameters from the server is incorrect.");
-
-            return res_params[0].get!T;
+            request(socket, false, Message.serialize_without_msginfo(magic, crypt, key, rsaKey, method, params));
+            return;
         }
         else
         {
-            alias FieldTypes = FieldTypeTuple!T;
-            enforce(FieldTypes.length == res_params.length, "Incorrect number of parameters, " ~ T.stringof ~ " requires " ~ FieldTypes.length.to!string ~ " parameters.");
+            ubyte[] response = request(socket, true, Message.serialize_without_msginfo(magic, crypt, key, rsaKey, method, params));
+            string name;
+            string res_method;
+            Variant[] res_params = Message.deserializeEx(magic, crypt, key, rsaKey, response, name, res_method);
 
-            T message = new T();
+            //enforce(method == res_method);
 
-            foreach (i, type; FieldTypes)
+            static if (isBuiltinType!T)
             {
-                mixin(`
-                    message.` ~ FieldNameTuple!T[i] ~ ` = res_params[` ~ i.to!string ~ `].get!` ~ type.stringof ~ `;
-                `);
-            }
+                enforce(res_params.length == 1, "The number of response parameters from the server is incorrect.");
 
-            return message;
+                return res_params[0].get!T;
+            }
+            else
+            {
+                alias FieldTypes = FieldTypeTuple!T;
+                enforce(FieldTypes.length == res_params.length, "Incorrect number of parameters, " ~ T.stringof ~ " requires " ~ FieldTypes.length.to!string ~ " parameters.");
+
+                T message = new T();
+
+                foreach (i, type; FieldTypes)
+                {
+                    mixin(`
+                        message.` ~ FieldNameTuple!T[i] ~ ` = res_params[` ~ i.to!string ~ `].get!` ~ type.stringof ~ `;
+                    `);
+                }
+
+                return message;
+            }
         }
     }
 
@@ -112,7 +138,7 @@ class Client
         The caller is responsible for connection and closure without actively closing the socket.
         But you need to close the exception before throwing it to release server resources.
     +/
-    private static ubyte[] request(Socket socket, const ubyte[] data)
+    private static ubyte[] request(Socket socket, const bool requireReceive, const ubyte[] data)
     {
         int sndtimeo, rcvtimeo;
         socket.getOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, sndtimeo);
@@ -148,6 +174,11 @@ class Client
 
                 throw new Exception("Server socket error at sending. error: " ~ formatSocketError(errno));
             }
+        }
+
+        if (!requireReceive)
+        {
+            return null;
         }
 
         ubyte[] receive(long length)

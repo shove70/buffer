@@ -40,7 +40,7 @@ class Server(Business)
                 alias ParameterTypes = ParameterTypeTuple!func;
                 alias T = ReturnType!func;
 
-                static assert((staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)),
+                static assert(is(T == void) || (staticIndexOf!(T, supportedBuiltinTypes) != -1) || ((BaseTypeTuple!T.length > 0) && is(BaseTypeTuple!T[0] == Message)),
                         "The function of RPC call return type is incorrect, function: " ~ member);
 
                 static if (Package != string.init)
@@ -48,20 +48,36 @@ class Server(Business)
                     mixin("import " ~ Package ~ ";");
                 }
 
-                static if (isBuiltinType!T)
+                static if (is(T == void))
                 {
                     mixin(`
                         if (method == "` ~ member ~ `")
                         {
                             if (params.length < ` ~ ParameterTypes.length.to!string ~ `)
                             {
-                                import std.stdio;
+                                import std.stdio : writeln;
                                 writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
-                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` lengthString!(ParameterTypes.length).");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                            }
+
+                            business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
+                            return null;
+                        }
+                    `);
+                }
+                else static if (isBuiltinType!T)
+                {
+                    mixin(`
+                        if (method == "` ~ member ~ `")
+                        {
+                            if (params.length < ` ~ ParameterTypes.length.to!string ~ `)
+                            {
+                                import std.stdio : writeln;
+                                writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
+                                assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
-
                             return Message.serialize_without_msginfo(method, ret);
                         }
                     `);
@@ -73,19 +89,13 @@ class Server(Business)
                         {
                             if (params.length < ` ~ ParameterTypes.length.to!string ~ `)
                             {
-                                import std.stdio;
+                                import std.stdio : writeln;
                                 writeln("Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
                                 assert(0, "Incorrect number of parameters, ` ~ member ~ ` requires ` ~ ParameterTypes.length.to!string ~ ` parameters.");
                             }
 
                             T ret = business.` ~ member ~ `(` ~ combineParams!ParameterTypes ~ `);
-
-                            if (ret is null)
-                            {
-                                return null;
-                            }
-
-                            return ret.serialize();
+                            return ((ret is null) ? null : ret.serialize());
                         }
                     `);
                 }
