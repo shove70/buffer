@@ -15,6 +15,11 @@ import crypto.rsa;
 
 import buffer.message;
 
+static if (!__traits(compiles, EWOULDBLOCK))
+{
+    enum EWOULDBLOCK = EAGAIN;
+}
+
 /// Rpc client
 class Client
 {
