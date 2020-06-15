@@ -145,10 +145,6 @@ class Client
     +/
     private static ubyte[] request(Socket socket, const bool requireReceive, const ubyte[] data)
     {
-        int sndtimeo, rcvtimeo;
-        socket.getOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, sndtimeo);
-        socket.getOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, rcvtimeo);
-
         long len;
         for (size_t off; off < data.length; off += len)
         {
@@ -167,8 +163,7 @@ class Client
             }
             else
             {
-                if (   ( sndtimeo && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
-                    || (!sndtimeo && (errno == EINTR)) )
+                if (errno == EINTR) // || errno == EAGAIN || errno == EWOULDBLOCK)
                 {
                     len = 0;
                     continue;
@@ -205,8 +200,7 @@ class Client
                 }
                 else
                 {
-                    if (   ( rcvtimeo && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
-                        || (!rcvtimeo && (errno == EINTR)) )
+                    if (errno == EINTR) // || errno == EAGAIN || errno == EWOULDBLOCK)
                     {
                         len = 0;
                         continue;
