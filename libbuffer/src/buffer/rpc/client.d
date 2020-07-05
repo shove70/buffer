@@ -66,6 +66,7 @@ class Client
         TcpSocket socket = new TcpSocket();
         socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, 30.seconds);
         socket.setOption(SocketOptionLevel.SOCKET, SocketOption.SNDTIMEO, 30.seconds);
+        socket.setOption(SocketOptionLevel.TCP, SocketOption.TCP_NODELAY, true);
         socket.connect(new InternetAddress(host, port));
 
         static if (is(T == void))
