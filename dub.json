@@ -3,7 +3,7 @@
     "name": "buffer",
     "description": "A protocol buffer & RPC library",
     "license": "MIT",
-    "copyright": "Copyright © 2018, Shove",
+    "copyright": "Copyright © 2017-2020, Shove",
     "targetType": "library",
     "targetName": "buffer",
     "importPaths": [
@@ -13,6 +13,6 @@
         "libbuffer/src"
     ],
     "dependencies": {
-        "crypto": "~>0.2.14"
+        "crypto": "*"
     }
 }
