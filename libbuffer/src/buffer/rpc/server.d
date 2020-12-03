@@ -102,7 +102,8 @@ class Server(Business)
             }
         }
 
-        assert(0, "The server does not implement client call method: " ~ method);
+        // Server does not implement client call method.
+        return null;
     }
 
     private static string combineParams(ParameterTypes...)()
