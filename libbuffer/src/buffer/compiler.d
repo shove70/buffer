@@ -35,7 +35,7 @@ private string compiler(const string source)()
 
         foreach (field; sentence.fields)
         {
-            code.put("\t" ~ field.type ~ " " ~ field.name ~ ";\r\n");
+            code.put("\t" ~ field.get.type ~ " " ~ field.get.name ~ ";\r\n");
         }
 
         code.put("\r\n");
@@ -293,7 +293,7 @@ struct Field
 struct Sentence
 {
     string name;
-    Field[] fields;
+    Nullable!Field[] fields;
 }
 
 Sentence[] parser(const Token[] tokens)
